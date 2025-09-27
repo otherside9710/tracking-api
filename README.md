@@ -1,6 +1,6 @@
 # Tracking API
 
-API de seguimiento construida con Fastify y TypeScript, implementando principios de Clean Architecture, SOLID y Domain-Driven Design (DDD).
+API REST para el seguimiento de envíos, implementada con Clean Architecture y TypeScript.
 
 ## 🏗️ Principios Arquitectónicos
 
@@ -28,71 +28,133 @@ Implementamos conceptos clave de DDD:
 - **Domain Events**: Para operaciones importantes del dominio
 - **Ubiquitous Language**: Terminología consistente en código y documentación
 
-## 🏗️ Estructura del Proyecto
+## Arquitectura
 
-El proyecto está estructurado siguiendo los principios de Clean Architecture:
+El proyecto sigue los principios de Clean Architecture y Domain-Driven Design (DDD), organizando el código en capas y módulos:
+
+### Estructura de Carpetas
 
 ```
 src/
-├── config/                      # Configuración centralizada
-│   └── environment.ts          # Variables de entorno tipadas
-├── contexts/                    # Contextos de dominio
-│   ├── shared/                 # Componentes compartidos
-│   │   └── domain/
-│   │       └── errors/        # Errores de dominio centralizados
-│   └── tracking/              # Contexto principal de tracking
-│       ├── domain/            # Reglas de negocio y entidades
-│       │   ├── entities/      # Entidades de dominio (Unit, Checkpoint)
-│       │   └── repositories/  # Interfaces de repositorios
-│       ├── application/       # Casos de uso y DTOs
-│       │   ├── dto/          # Objetos de transferencia de datos
-│       │   └── use-cases/    # Casos de uso de la aplicación
-│       └── infrastructure/    # Implementaciones concretas
-│           └── repositories/  # Implementaciones de repositorios
-├── interfaces/                  # Adaptadores de interfaz
-│   └── tracking/
-│       └── http/             # Capa de presentación HTTP
-│           ├── controllers/  # Controladores por método HTTP
-│           │   ├── GET/     # Controladores para métodos GET
-│           │   └── POST/    # Controladores para métodos POST
-│           ├── middlewares/ # Middlewares (Auth, Error Handler)
-│           ├── routes/     # Definición de rutas
-│           └── validators/ # Validadores de esquemas
-├── app.ts                      # Configuración de la aplicación
-└── server.ts                   # Punto de entrada
+├── app.ts                 # Configuración de Fastify
+├── server.ts             # Punto de entrada
+├── config/              # Configuraciones
+├── contexts/           # Módulos de dominio
+│   ├── shared/        # Código compartido
+│   ├── token/         # Gestión de autenticación
+│   └── tracking/      # Lógica de seguimiento
+└── interfaces/        # Adaptadores HTTP
 ```
 
-## 🚀 Características
+### Capas de la Arquitectura
 
-### Arquitectura y Diseño
-- Clean Architecture con capas bien definidas
-- Principios SOLID en todo el código
-- Domain-Driven Design (DDD)
-- Estructura modular por contextos acotados
+1. **Domain**: Entidades y reglas de negocio
+   - Entities: `Unit`, `Checkpoint`
+   - Repositories: `IUnitRepository`, `ICheckpointRepository`
 
-### Tecnologías
-- API RESTful con Fastify
-- TypeScript con configuración estricta
-- Tests con Jest
-- Persistencia en memoria (fácilmente extensible)
+2. **Application**: Casos de uso
+   - GetTrackingHistory
+   - ListUnitsByStatus
+   - RegisterCheckpoint
 
-### Seguridad y Monitoreo
-- Manejo de errores centralizado con DomainError
-- Monitoreo de errores con Sentry
-- Validación de esquemas
-- Logging estructurado con Pino
-- CORS configurable
-- Rate Limiting
-- Headers seguros con Helmet
+3. **Infrastructure**: Implementaciones técnicas
+   - Repositorios en memoria
+   - Servicios de autenticación
 
-### Calidad de Código
-- Principios SOLID
-- Tests unitarios y de integración
-- ESLint y Prettier configurados
-- Husky para git hooks
-- Documentación completa
+4. **Interfaces**: APIs HTTP
+   - Controllers: Manejo de requests
+   - Routes: Definición de endpoints
+   - Validators: Validación de entrada
 
-## 📋 Requisitos
+## 🚀 Características Técnicas
+
+### Core
+- **Framework**: Fastify para API REST
+- **Lenguaje**: TypeScript con configuración estricta
+- **Testing**: Jest para pruebas unitarias y de integración
+- **Persistencia**: Repositorios en memoria (extensible a otras implementaciones)
+
+### Seguridad
+- **Autenticación**: JWT con Auth0
+- **Headers**: Helmet para seguridad HTTP
+- **Validación**: JSON Schema para requests
+- **CORS**: Configurable por ambiente
+- **Rate Limiting**: Protección contra abusos
+
+### Calidad
+- **Logging**: Pino para logs estructurados
+- **Monitoreo**: Integración con Sentry
+- **Linting**: ESLint y Prettier
+- **Git Hooks**: Husky para pre-commit
+- **Errores**: Manejo centralizado con tipos de dominio
+
+## �️ Configuración
+
+### Requisitos Previos
+
+- Node.js >= 18
+- npm o yarn
+- Auth0 account y credenciales configuradas
+
+### Variables de Entorno
+
+```bash
+# Server
+PORT=3000
+HOST=0.0.0.0
+
+# Auth0
+AUTH0_DOMAIN=your-domain.auth0.com
+AUTH0_AUDIENCE=your-api-identifier
+AUTH0_CLIENT_ID=your-client-id
+AUTH0_CLIENT_SECRET=your-client-secret
+
+# Logging
+LOG_LEVEL=info
+SENTRY_DSN=your-sentry-dsn
+```
+
+### Instalación
+
+```bash
+# Instalar dependencias
+npm install
+
+# Desarrollo
+npm run dev
+
+# Tests
+npm test
+
+# Producción
+npm run build
+npm start
+```
+
+## 📝 API Reference
+
+### Endpoints
+
+#### Authentication
+- `POST /token`
+  - Get JWT token for API access
+  - Body: `{ "username": "user@email.com", "password": "******" }`
+
+#### Tracking
+- `POST /tracking/checkpoints`
+  - Register new checkpoint
+  - Auth required
+  - Body: `{ "unitId": "123", "status": "DELIVERED", "location": "..." }`
+
+- `GET /tracking/units/{id}/history`
+  - Get tracking history
+  - Auth required
+  - Returns: Array of checkpoints
+
+- `GET /tracking/units`
+  - List units by status
+  - Auth required
+  - Query: `?status=IN_TRANSIT`
 
 - Node.js >= 18
 - npm >= 9
