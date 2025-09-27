@@ -207,13 +207,12 @@ npm run test:coverage   # Cobertura
 ### Autenticación
 
 #### POST /oauth/token
-Obtiene un token de acceso.
+Obtiene un token de acceso usando credenciales de usuario.
 
 ```json
 {
-  "client_id": "tracking-api",
-  "client_secret": "tracking-secret",
-  "grant_type": "client_credentials"
+  "username": "prueba@coordinadora.com",
+  "password": "BFASDASer@dvhd3ysJ@r81"
 }
 ```
 
@@ -253,18 +252,16 @@ Query params:
 
 ## 🔐 Seguridad y Autenticación
 
-### Autenticación con Auth0
-La API utiliza Auth0 para la autenticación. Para obtener un token:
+### Autenticación
+La API utiliza Auth0 para la gestión de autenticación. Para obtener un token de acceso:
 
 ```bash
 curl --request POST \
-  --url https://dev-tracking-api.us.auth0.com/oauth/token \
+  --url http://localhost:3000/oauth/token \
   --header 'content-type: application/json' \
   --data '{
-    "client_id": "Aa4aQzupwpkVz2bUKCa9siMZ5WaSq3k0",
-    "client_secret": "fH3vi4y97FWO9SkHqTIZ1tTt5_GgdcbRqqJhW9Fe3UIpG5Eaw6RgjOdP99HrwgeJ",
-    "audience": "https://tracking-api.com",
-    "grant_type": "client_credentials"
+    "username": "prueba@coordinadora.com",
+    "password": "BFASDASer@dvhd3ysJ@r81"
 }'
 ```
 
@@ -276,15 +273,7 @@ curl -X GET http://localhost:3000/api/v1/shipments \
   -H "Authorization: Bearer your-token-here"
 ```
 
-### Credenciales de Prueba Auth0
-```env
-AUTH0_DOMAIN=dev-tracking-api.us.auth0.com
-AUTH0_CLIENT_ID=Aa4aQzupwpkVz2bUKCa9siMZ5WaSq3k0
-AUTH0_CLIENT_SECRET=fH3vi4y97FWO9SkHqTIZ1tTt5_GgdcbRqqJhW9Fe3UIpG5Eaw6RgjOdP99HrwgeJ
-AUTH0_AUDIENCE=https://tracking-api.com
-```
-
-> ⚠️ **Nota de Seguridad**: Estas credenciales son solo para propósitos de desarrollo y pruebas.
+> ⚠️ **Nota**: Las credenciales mostradas son solo para propósitos de desarrollo y pruebas.
 
 ### Características de Seguridad
 - Autenticación JWT
