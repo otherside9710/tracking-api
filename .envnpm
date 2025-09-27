@@ -1,0 +1,14 @@
+# Server Configuration
+PORT=3000
+HOST=0.0.0.0
+NODE_ENV=development
+
+# Logging
+LOG_LEVEL=info
+
+# Rate Limiting
+RATE_LIMIT_MAX=100
+RATE_LIMIT_TIME_WINDOW=60000  # 1 minute in milliseconds
+
+# Error Monitoring
+SENTRY_DSN=https://bc9c5a509d498c753f6d26a4cd9c46f5@o4510089283108864.ingest.us.sentry.io/4510089284550656# Auth0 ConfigurationAUTH0_DOMAIN=dev-tracking-api.us.auth0.comAUTH0_CLIENT_ID=Aa4aQzupwpkVz2bUKCa9siMZ5WaSq3k0AUTH0_CLIENT_SECRET=fH3vi4y97FWO9SkHqTIZ1tTt5_GgdcbRqqJhW9Fe3UIpG5Eaw6RgjOdP99HrwgeJAUTH0_AUDIENCE=https://tracking-api.com# CORS ConfigurationALLOWED_ORIGINS=* run dev
