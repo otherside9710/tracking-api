@@ -291,7 +291,7 @@ curl -X GET http://localhost:3000/api/v1/shipments \
 - Headers seguros con Helmet
 - Manejo de errores de autenticación
 
-## � Monitoreo de Errores
+## 👀 Monitoreo de Errores
 
 El proyecto utiliza Sentry para el monitoreo y tracking de errores en producción.
 
@@ -340,5 +340,5 @@ El proyecto incluye:
 
 Este proyecto está bajo la Licencia UNLICENSED.
 
-## Author
+## 🤠 Author
 Made with 🫶 by [Julio Sarmiento](https://github.com/otherside9710)
