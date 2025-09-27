@@ -5,6 +5,7 @@ import {
   ListUnitsByStatusController,
   RegisterCheckpointController
 } from '@app/interfaces/tracking/http/controllers';
+import { authMiddleware } from '@app/interfaces/tracking/http/middlewares';
 
 export async function checkpointRoutes(
   fastify: FastifyInstance,
@@ -14,19 +15,28 @@ export async function checkpointRoutes(
 ): Promise<void> {
   fastify.post(
     '/api/v1/checkpoints',
-    { schema: CheckpointSchemaValidator.create() },
+    { 
+      schema: CheckpointSchemaValidator.create(),
+      onRequest: [authMiddleware]
+    },
     registerCheckpointController.execute.bind(registerCheckpointController)
   );
 
   fastify.get(
     '/api/v1/tracking/:trackingId',
-    { schema: CheckpointSchemaValidator.getTracking() },
+    { 
+      schema: CheckpointSchemaValidator.getTracking(),
+      onRequest: [authMiddleware]
+    },
     getTrackingHistoryController.execute.bind(getTrackingHistoryController)
   );
 
   fastify.get(
     '/api/v1/shipments',
-    { schema: CheckpointSchemaValidator.listShipments() },
+    { 
+      schema: CheckpointSchemaValidator.listShipments(),
+      onRequest: [authMiddleware]
+    },
     listUnitsByStatusController.execute.bind(listUnitsByStatusController)
   );
 }
