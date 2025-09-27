@@ -88,7 +88,7 @@ src/
 - **Git Hooks**: Husky para pre-commit
 - **Errores**: Manejo centralizado con tipos de dominio
 
-## �️ Configuración
+## ⚙️ Configuración
 
 ### Requisitos Previos
 
@@ -98,23 +98,52 @@ src/
 
 ### Variables de Entorno
 
-```bash
-# Server
+```env
+# Server Configuration
 PORT=3000
 HOST=0.0.0.0
+NODE_ENV=development
 
-# Auth0
-AUTH0_DOMAIN=your-domain.auth0.com
-AUTH0_AUDIENCE=your-api-identifier
-AUTH0_CLIENT_ID=your-client-id
-AUTH0_CLIENT_SECRET=your-client-secret
+# Error Monitoring
+SENTRY_DSN=your-sentry-dsn
 
 # Logging
 LOG_LEVEL=info
-SENTRY_DSN=your-sentry-dsn
+
+# Rate Limiting
+RATE_LIMIT_MAX=100
+RATE_LIMIT_TIME_WINDOW=60000
+
+# Auth0 Configuration
+AUTH0_BASE_URL=your-auth0-domain
+AUTH0_CLIENT_ID=your-client-id
+AUTH0_CLIENT_SECRET=your-client-secret
+AUTH0_AUDIENCE=your-audience
+AUTH0_GRANT_TYPE=http://auth0.com/oauth/grant-type/password-realm
+
+# CORS
+ALLOWED_ORIGINS=*
 ```
 
-### Instalación
+> 📝 **Nota**: Reemplaza los valores `your-*` con tus propias credenciales.
+
+### 🛠️ Instalación
+
+1. Clonar el repositorio:
+\`\`\`bash
+git clone [url-del-repositorio]
+cd tracking-api
+\`\`\`
+
+2. Instalar dependencias:
+\`\`\`bash
+npm install
+\`\`\`
+
+3. Configurar variables de entorno:
+\`\`\`bash
+cp .env.example .env
+\`\`\`
 
 ```bash
 # Instalar dependencias
@@ -156,26 +185,6 @@ npm start
   - Auth required
   - Query: `?status=IN_TRANSIT`
 
-- Node.js >= 18
-- npm >= 9
-
-## 🛠️ Instalación
-
-1. Clonar el repositorio:
-\`\`\`bash
-git clone [url-del-repositorio]
-cd tracking-api
-\`\`\`
-
-2. Instalar dependencias:
-\`\`\`bash
-npm install
-\`\`\`
-
-3. Configurar variables de entorno:
-\`\`\`bash
-cp .env.example .env
-\`\`\`
 
 ## 🚦 Uso
 
@@ -301,36 +310,6 @@ El proyecto utiliza Sentry para el monitoreo y tracking de errores en producció
 - Segmentación por ambiente (development/production)
 - Alertas configurables
 
-## ⚙️ Variables de Entorno
-
-```env
-# Server Configuration
-PORT=3000
-HOST=0.0.0.0
-NODE_ENV=development
-
-# Error Monitoring
-SENTRY_DSN=your-sentry-dsn
-
-# Logging
-LOG_LEVEL=info
-
-# Rate Limiting
-RATE_LIMIT_MAX=100
-RATE_LIMIT_TIME_WINDOW=60000
-
-# Auth0 Configuration
-AUTH0_BASE_URL=your-auth0-domain
-AUTH0_CLIENT_ID=your-client-id
-AUTH0_CLIENT_SECRET=your-client-secret
-AUTH0_AUDIENCE=your-audience
-AUTH0_GRANT_TYPE=http://auth0.com/oauth/grant-type/password-realm
-
-# CORS
-ALLOWED_ORIGINS=*
-```
-
-> 📝 **Nota**: Reemplaza los valores `your-*` con tus propias credenciales.
 
 ## 🧪 Testing
 
