@@ -1,0 +1,41 @@
+services:
+  ms-transaction:
+    build:
+      context: .
+      dockerfile: ./compose/local/Dockerfile
+    depends_on:
+      - postgres
+    container_name: transaction
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    ports:
+      - "${PORT}:8080"
+    env_file:
+      - .env
+    networks:
+      - nestjs_network
+
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_DB=${DATABASE_NAME}
+      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "54032:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - nestjs_network
+
+volumes:
+  postgres_data: {}
+
+networks:
+  nestjs_network:
+    driver: bridge
