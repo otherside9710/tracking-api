@@ -301,20 +301,36 @@ El proyecto utiliza Sentry para el monitoreo y tracking de errores en producció
 - Segmentación por ambiente (development/production)
 - Alertas configurables
 
-## 📝 API Documentation
+## ⚙️ Variables de Entorno
 
 ```env
+# Server Configuration
 PORT=3000
 HOST=0.0.0.0
 NODE_ENV=development
-LOG_LEVEL=info
-# Security
-API_KEY=your-api-key-here
 
 # Error Monitoring
 SENTRY_DSN=your-sentry-dsn
+
+# Logging
+LOG_LEVEL=info
+
+# Rate Limiting
+RATE_LIMIT_MAX=100
+RATE_LIMIT_TIME_WINDOW=60000
+
+# Auth0 Configuration
+AUTH0_BASE_URL=your-auth0-domain
+AUTH0_CLIENT_ID=your-client-id
+AUTH0_CLIENT_SECRET=your-client-secret
+AUTH0_AUDIENCE=your-audience
+AUTH0_GRANT_TYPE=http://auth0.com/oauth/grant-type/password-realm
+
+# CORS
 ALLOWED_ORIGINS=*
 ```
+
+> 📝 **Nota**: Reemplaza los valores `your-*` con tus propias credenciales.
 
 ## 🧪 Testing
 
