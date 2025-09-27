@@ -6,6 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "prepare": "husky install",
     "build": "tsc",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "node dist/server.js",
@@ -22,7 +23,8 @@
     "migration:run": "npm run typeorm -- migration:run -d src/contexts/shared/infrastructure/orm.config.ts",
     "migration:generate": "npm run typeorm -- migration:generate -d src/contexts/shared/infrastructure/orm.config.ts",
     "migration:create": "npm run typeorm -- migration:create",
-    "migration:revert": "npm run typeorm -- migration:revert -d src/contexts/shared/infrastructure/orm.config.ts"
+    "migration:revert": "npm run typeorm -- migration:revert -d src/contexts/shared/infrastructure/orm.config.ts",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@fastify/cors": "^8.4.2",
@@ -58,6 +60,13 @@
     "ts-jest": "^29.2.5",
     "tsx": "^4.19.4",
     "typescript": "^5.7.3"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "prettier --write",
+      "eslint --fix",
+      "jest --bail --findRelatedTests"
+    ]
   },
   "jest": {
     "preset": "ts-jest",
