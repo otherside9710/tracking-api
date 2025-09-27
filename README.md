@@ -140,6 +140,30 @@ npm run test:coverage   # Cobertura
 
 ## 🔄 Endpoints
 
+> ⚠️ **Nota**: Todos los endpoints requieren autenticación JWT en el header `Authorization: Bearer <token>`
+
+### Autenticación
+
+#### POST /oauth/token
+Obtiene un token de acceso.
+
+```json
+{
+  "client_id": "tracking-api",
+  "client_secret": "tracking-secret",
+  "grant_type": "client_credentials"
+}
+```
+
+Respuesta:
+```json
+{
+  "access_token": "eyJhbGc...",
+  "expires_in": 3600,
+  "token_type": "Bearer"
+}
+```
+
 ### Checkpoints
 
 #### POST /api/v1/checkpoints
@@ -165,13 +189,47 @@ Lista unidades por estado.
 Query params:
 - \`status\`: Filtrar por estado (opcional)
 
-## 🔐 Seguridad
+## 🔐 Seguridad y Autenticación
 
-La API incluye:
-- Autenticación mediante API Key
+### Autenticación con Auth0
+La API utiliza Auth0 para la autenticación. Para obtener un token:
+
+```bash
+curl --request POST \
+  --url https://dev-tracking-api.us.auth0.com/oauth/token \
+  --header 'content-type: application/json' \
+  --data '{
+    "client_id": "Aa4aQzupwpkVz2bUKCa9siMZ5WaSq3k0",
+    "client_secret": "fH3vi4y97FWO9SkHqTIZ1tTt5_GgdcbRqqJhW9Fe3UIpG5Eaw6RgjOdP99HrwgeJ",
+    "audience": "https://tracking-api.com",
+    "grant_type": "client_credentials"
+}'
+```
+
+### Usando el Token
+Incluye el token JWT en el header Authorization:
+
+```bash
+curl -X GET http://localhost:3000/api/v1/shipments \
+  -H "Authorization: Bearer your-token-here"
+```
+
+### Credenciales de Prueba Auth0
+```env
+AUTH0_DOMAIN=dev-tracking-api.us.auth0.com
+AUTH0_CLIENT_ID=Aa4aQzupwpkVz2bUKCa9siMZ5WaSq3k0
+AUTH0_CLIENT_SECRET=fH3vi4y97FWO9SkHqTIZ1tTt5_GgdcbRqqJhW9Fe3UIpG5Eaw6RgjOdP99HrwgeJ
+AUTH0_AUDIENCE=https://tracking-api.com
+```
+
+> ⚠️ **Nota de Seguridad**: Estas credenciales son solo para propósitos de desarrollo y pruebas.
+
+### Características de Seguridad
+- Autenticación JWT
 - Rate Limiting
 - CORS configurable
 - Headers seguros con Helmet
+- Manejo de errores de autenticación
 
 ## � Monitoreo de Errores
 
