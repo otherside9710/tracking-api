@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 import { config } from '@app/config/environment';
-import { TokenError } from '@shared/token/domain/errors';
+import { TokenError } from '@shared/domain/errors';
 
 interface AuthResponse {
   access_token: string;
@@ -16,12 +16,15 @@ interface PasswordGrantParams {
 }
 
 export class AuthService {
-  static async getPasswordGrantToken({ username, password }: PasswordGrantParams): Promise<AuthResponse> {
+  static async getPasswordGrantToken({
+    username,
+    password,
+  }: PasswordGrantParams): Promise<AuthResponse> {
     try {
       const response = await fetch(`${config.auth.domain}/oauth/token`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           grant_type: config.auth.granType,

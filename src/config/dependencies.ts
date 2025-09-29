@@ -1,16 +1,19 @@
-import { InMemoryCheckpointRepository, InMemoryUnitRepository } from '@tracking/infrastructure/repositories';
-import { 
-  RegisterCheckpointUseCase, 
-  GetTrackingHistoryUseCase, 
-  ListUnitsByStatusUseCase 
+import {
+  InMemoryCheckpointRepository,
+  InMemoryUnitRepository,
+} from '@tracking/infrastructure/repositories';
+import {
+  RegisterCheckpointUseCase,
+  GetTrackingHistoryUseCase,
+  ListUnitsByStatusUseCase,
 } from '@tracking/application/use-cases';
-import { 
+import {
   GetTrackingHistoryController,
   ListUnitsByStatusController,
-  RegisterCheckpointController
+  RegisterCheckpointController,
 } from '@app/interfaces/tracking/http/controllers';
 import { GetTokenController } from '@app/interfaces/token/http/controllers';
-import { GetTokenUseCase } from '@app/contexts/shared/token/application/use-cases';
+import { GetTokenUseCase } from '@app/contexts/shared/application/use-cases';
 
 export class DependencyContainer {
   // Repositories
@@ -20,35 +23,33 @@ export class DependencyContainer {
   // Use Cases
   private static registerCheckpointUseCase = new RegisterCheckpointUseCase(
     this.checkpointRepository,
-    this.unitRepository
+    this.unitRepository,
   );
 
   private static getTrackingHistoryUseCase = new GetTrackingHistoryUseCase(
     this.checkpointRepository,
-    this.unitRepository
+    this.unitRepository,
   );
 
   private static listUnitsByStatusUseCase = new ListUnitsByStatusUseCase(
-    this.unitRepository
+    this.unitRepository,
   );
 
   private static getTokenUseCase = new GetTokenUseCase();
 
   // Controllers
-  private static getTrackingHistoryController = new GetTrackingHistoryController(
-    this.getTrackingHistoryUseCase
-  );
+  private static getTrackingHistoryController =
+    new GetTrackingHistoryController(this.getTrackingHistoryUseCase);
 
   private static listUnitsByStatusController = new ListUnitsByStatusController(
-    this.listUnitsByStatusUseCase
+    this.listUnitsByStatusUseCase,
   );
 
-  private static registerCheckpointController = new RegisterCheckpointController(
-    this.registerCheckpointUseCase
-  );
+  private static registerCheckpointController =
+    new RegisterCheckpointController(this.registerCheckpointUseCase);
 
   private static getTokenController = new GetTokenController(
-    this.getTokenUseCase
+    this.getTokenUseCase,
   );
 
   static getControllers() {
@@ -56,7 +57,7 @@ export class DependencyContainer {
       getTrackingHistoryController: this.getTrackingHistoryController,
       listUnitsByStatusController: this.listUnitsByStatusController,
       registerCheckpointController: this.registerCheckpointController,
-      getTokenController: this.getTokenController
+      getTokenController: this.getTokenController,
     };
   }
 }

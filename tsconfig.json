@@ -42,6 +42,8 @@
   },
   "include": [
     "src",
-    "test"
+    "test",
+    "src/contexts/shared/infrastructure/types/**/*.d.ts",
+    "jest.config.ts"
   ]
 }

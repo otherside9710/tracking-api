@@ -2,27 +2,24 @@
   "name": "tracking-api",
   "version": "1.0.0",
   "description": "Tracking API with Fastify and TypeScript",
-  "author": "",
+  "author": "Julio Sarmiento Peña",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "prepare": "husky",
     "build": "tsc",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "node dist/server.js",
     "dev": "tsx watch src/server.ts",
     "dev:debug": "tsx --inspect-brk watch src/server.ts",
     "lint": "eslint \"{src,test}/**/*.ts\" --fix",
-    "test": "jest",
+    "test": "npm run test:unit && npm run test:acceptance",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:unit": "jest --testPathIgnorePatterns=integration --passWithNoTests",
+    "test:unit": "jest --config jest.config.ts --testPathIgnorePatterns=integration --passWithNoTests",
+    "test:acceptance": "NODE_PATH=./src cucumber-js --config cucumber.js --tags 'not @skip'",
     "clean": "rm -rf dist",
-    "build:clean": "npm run clean && npm run build",
-    "typeorm": "tsx ./node_modules/typeorm/cli.js",
-    "migration:run": "npm run typeorm -- migration:run -d src/contexts/shared/infrastructure/orm.config.ts",
-    "migration:generate": "npm run typeorm -- migration:generate -d src/contexts/shared/infrastructure/orm.config.ts",
-    "migration:create": "npm run typeorm -- migration:create",
-    "migration:revert": "npm run typeorm -- migration:revert -d src/contexts/shared/infrastructure/orm.config.ts"
+    "build:clean": "npm run clean && npm run build"
   },
   "dependencies": {
     "@fastify/cors": "^8.4.2",
@@ -36,7 +33,6 @@
     "jsonwebtoken": "^9.0.2",
     "jwks-rsa": "^3.2.0",
     "node-fetch": "^2.7.0",
-    "pg": "^8.16.0",
     "pino": "^8.16.1",
     "pino-pretty": "^10.2.3",
     "reflect-metadata": "^0.2.2",
@@ -44,37 +40,33 @@
     "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "@cucumber/cucumber": "^11.3.0",
+    "@types/chai": "^5.2.2",
+    "@types/cucumber": "^6.0.1",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.10.7",
     "@types/node-fetch": "^2.6.13",
     "@types/uuid": "^9.0.7",
     "@typescript-eslint/eslint-plugin": "^6.9.0",
     "@typescript-eslint/parser": "^6.9.0",
+    "chai": "^6.2.0",
     "eslint": "^8.52.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",
+    "husky": "^9.1.7",
     "jest": "^29.7.0",
     "prettier": "^3.4.2",
-    "ts-jest": "^29.2.5",
+    "ts-jest": "^29.4.4",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "tsx": "^4.19.4",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.45.0"
   },
-  "jest": {
-    "preset": "ts-jest",
-    "testEnvironment": "node",
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
-    "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
-    },
-    "collectCoverageFrom": [
-      "**/*.(t|j)s"
-    ],
-    "coverageDirectory": "../coverage"
+  "lint-staged": {
+    "*.ts": [
+      "prettier --write",
+      "jest --bail --findRelatedTests"
+    ]
   }
 }
