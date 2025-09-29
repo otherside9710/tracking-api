@@ -259,7 +259,76 @@ Lista unidades por estado.
 Query params:
 - \`status\`: Filtrar por estado (opcional)
 
-## 🔐 Seguridad y Autenticación
+## � Ejemplos de Uso
+
+A continuación se muestra el flujo completo para probar los endpoints de la API:
+
+### 1. Obtener Token de Acceso
+
+```bash
+# 1. Obtener token de autenticación
+curl --request POST \
+  --url http://localhost:3000/oauth/token \
+  --header 'content-type: application/json' \
+  --data '{
+    "username": "prueba@coordinadora.com",
+    "password": "BFASDASer@dvhd3ysJ@r81"
+}'
+```
+
+Guarda el token recibido para usarlo en las siguientes peticiones:
+
+```json
+{
+  "access_token": "eyJhbGc...",
+  "expires_in": 3600,
+  "token_type": "Bearer"
+}
+```
+
+### 2. Registrar un Checkpoint
+
+> ⚠️ **Importante**: El sistema tiene las siguientes unidades predefinidas para pruebas:
+> - Unit ID: `UNIT001` - Tracking ID: `TRK001`
+> - Unit ID: `UNIT002` - Tracking ID: `TRK002`
+> - Unit ID: `UNIT003` - Tracking ID: `TRK003`
+
+```bash
+# 2. Crear un nuevo checkpoint
+curl --request POST \
+  --url http://localhost:3000/api/v1/checkpoints \
+  --header 'authorization: Bearer eyJhbGc...' \
+  --header 'content-type: application/json' \
+  --data '{
+    "unitId": "UNIT001",
+    "trackingId": "TRK001",
+    "status": "IN_TRANSIT",
+    "location": "Bogotá, Colombia",
+    "description": "En ruta hacia destino"
+}'
+```
+
+### 3. Consultar Historial de Tracking
+
+```bash
+# 3. Obtener historial de una unidad
+curl --request GET \
+  --url http://localhost:3000/api/v1/tracking/TRK789 \
+  --header 'authorization: Bearer eyJhbGc...'
+```
+
+### 4. Listar Unidades por Estado
+
+```bash
+# 4. Listar todas las unidades en tránsito
+curl --request GET \
+  --url 'http://localhost:3000/api/v1/shipments?status=IN_TRANSIT' \
+  --header 'authorization: Bearer eyJhbGc...'
+```
+
+> ℹ️ **Nota**: Reemplaza `eyJhbGc...` con el token obtenido en el paso 1.
+
+## �🔐 Seguridad y Autenticación
 
 ### Autenticación
 La API utiliza Auth0 para la gestión de autenticación. Para obtener un token de acceso:
