@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { config } from '@app/config/environment';
 import { UnauthorizedError } from '@shared/domain/errors';
 import { FastifyRequest, FastifyReply } from 'fastify';
+import { JwtPayload } from 'jsonwebtoken';
 
 interface DecodedToken {
   header: {
@@ -18,7 +19,7 @@ const client = new JwksClient({
   cache: true,
   rateLimit: true,
   requestHeaders: {}, // empty headers object
-  timeout: 30000 // timeout de 30 segundos
+  timeout: 30000, // timeout de 30 segundos
 });
 
 async function getKey(kid: string): Promise<string> {
@@ -28,7 +29,7 @@ async function getKey(kid: string): Promise<string> {
       console.error('No se encontró la clave para el kid:', kid);
       throw new UnauthorizedError('No se encontró la clave de verificación');
     }
-    
+
     return key.getPublicKey();
   } catch (error) {
     console.error('Error obteniendo clave de firma:', error);
@@ -41,23 +42,27 @@ async function getKey(kid: string): Promise<string> {
 
 export async function authMiddleware(
   request: FastifyRequest,
-  reply: FastifyReply
+  _reply: FastifyReply,
 ): Promise<void> {
   try {
     const authHeader = request.headers.authorization;
-    
+
     if (!authHeader) {
-      throw new UnauthorizedError('No se proporcionó el header de autorización');
+      throw new UnauthorizedError(
+        'No se proporcionó el header de autorización',
+      );
     }
 
     const token = authHeader.replace('Bearer ', '');
-    
+
     if (!token) {
       throw new UnauthorizedError('No se proporcionó el token');
     }
 
     // Decodificar el token sin verificar para obtener el kid
-    const decodedToken = jwt.decode(token, { complete: true }) as DecodedToken | null;
+    const decodedToken = jwt.decode(token, {
+      complete: true,
+    }) as DecodedToken | null;
     if (!decodedToken || !decodedToken.header.kid) {
       throw new UnauthorizedError('Token inválido');
     }
@@ -68,16 +73,15 @@ export async function authMiddleware(
     // Verificar el token con la clave pública
     const cleanDomain = config.auth.domain?.replace('https://', '') || '';
     const cleanAudience = config.auth.audience?.replace('https://', 'https://');
-    
+
     const decoded = jwt.verify(token, publicKey, {
       algorithms: ['RS256'],
       audience: cleanAudience,
-      issuer: `https://${cleanDomain}/`
+      issuer: `https://${cleanDomain}/`,
     }) as jwt.JwtPayload;
 
     // Añadir la información del usuario al request para uso posterior
     request.user = decoded;
-
   } catch (error) {
     if (error instanceof UnauthorizedError) {
       throw error;
