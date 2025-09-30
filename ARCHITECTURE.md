@@ -213,7 +213,7 @@ Organización del código en contextos delimitados:
 ### ADR-001: Clean Architecture
 
 **Estado:** Aceptado  
-**Fecha:** Sep 2025
+**Fecha:** 2025  
 **Contexto:** Necesitamos una arquitectura que permita escalabilidad, mantenibilidad y testabilidad.  
 **Decisión:** Implementar Clean Architecture con separación clara de capas.  
 **Consecuencias:**
@@ -226,7 +226,7 @@ Organización del código en contextos delimitados:
 ### ADR-002: Fastify como Framework HTTP
 
 **Estado:** Aceptado  
-**Fecha:** 2024  
+**Fecha:** 2025  
 **Contexto:** Necesitamos alto rendimiento para manejar 1.2M checkpoints/día.  
 **Decisión:** Usar Fastify en lugar de Express.  
 **Consecuencias:**
@@ -235,7 +235,7 @@ Organización del código en contextos delimitados:
 - ✅ Mejor soporte para TypeScript
 - ⚠️ Ecosistema más pequeño que Express
 
-[Ver más ADRs en la documentación completa]
+[Ver más en la documentación completa]
 
 ## 🚀 Escalabilidad y Performance
 
