@@ -1,6 +1,29 @@
-# Tracking API
+#  Tracking API  🔥
 
-API REST para el seguimiento de envíos, implementada con Clean Architecture y TypeScript.
+API REST para el seguimiento de envíos, implementada con Node TS + Clean Architecture + DDD.
+
+## URL del Servicio
+
+La API está desplegada y disponible en:
+
+```
+https://tracking-api-6omx.onrender.com
+```
+
+### 🏎️ Endpoints Principales
+
+- Health Check: `GET /health`
+- Obtener Token: `POST /api/v1/token`
+- Registrar Checkpoint: `POST /api/v1/checkpoints`
+- Consultar Tracking: `GET /api/v1/tracking/:trackingNumber`
+- Listar Unidades por Estado: `GET /api/v1/shipments?status=IN_TRANSIT`
+
+### Estado del Servicio
+
+Puedes verificar el estado del servicio en cualquier momento accediendo a:
+```
+https://tracking-api-6omx.onrender.com/health
+```
 
 ## Despliegue en Render
 
@@ -12,28 +35,50 @@ API REST para el seguimiento de envíos, implementada con Clean Architecture y T
 ### Pasos para el despliegue
 
 1. Ve a tu dashboard en Render
-2. Haz clic en "New" y selecciona "Web Service"
-3. Conecta con el repositorio de GitHub
-4. Render detectará automáticamente la configuración en el archivo `render.yaml`
-5. Configura las siguientes variables de entorno en Render:
+2. Crea un nuevo Web Service y conecta tu repositorio de GitHub
+3. Configura el servicio:
+   - Build Command: `npm install && npm run build`
+   - Start Command: `npm start`
 
-   - `SENTRY_DSN`: Tu DSN de Sentry
-   - `AUTH0_BASE_URL`: URL base de Auth0
-   - `AUTH0_CLIENT_ID`: Client ID de Auth0
-   - `AUTH0_CLIENT_SECRET`: Client Secret de Auth0
-   - `AUTH0_AUDIENCE`: Audience de Auth0
-   - `AUTH0_GRANT_TYPE`: Grant Type de Auth0
+4. Configura las variables de entorno en GitHub Actions (Settings > Secrets > Actions):
 
-   Las demás variables ya están configuradas en el archivo `render.yaml`
+   ```yaml
+   # Variables requeridas en GitHub Secrets
+   LOG_LEVEL: info
+   SENTRY_DSN: tu-dsn-de-sentry
+   ALLOWED_ORIGINS: "*"
+   AUTH0_BASE_URL: tu-auth0-url
+   AUTH0_CLIENT_ID: tu-client-id
+   AUTH0_CLIENT_SECRET: tu-client-secret
+   AUTH0_AUDIENCE: tu-audience
+   AUTH0_GRANT_TYPE: tu-grant-type
+   RATE_LIMIT_MAX: "100"
+   RATE_LIMIT_TIME_WINDOW: "60000"
+   RENDER_DEPLOY_HOOK_URL: tu-render-deploy-hook-url
+   ```
 
-6. Haz clic en "Create Web Service"
+5. Configura el Deploy Hook en Render:
+   - Ve a tu servicio en Render
+   - Dashboard > Settings > Deploy Hook
+   - Copia la URL del Deploy Hook
+   - Agrégala como secreto `RENDER_DEPLOY_HOOK_URL` en GitHub
+
+El despliegue se realizará automáticamente cuando:
+- Se hace push a la rama `main`
+- Todos los tests pasan correctamente
+- El ambiente de producción está configurado en GitHub
+
+El workflow de CI/CD (.github/workflows/deploy.yml) se encarga de:
+1. Ejecutar los tests unitarios y de aceptación
+2. Si los tests pasan, triggerea el despliegue en Render
+3. Render construye y despliega la nueva versión
 
 ### Verificación del despliegue
 
-Una vez desplegado, puedes verificar que el servicio está funcionando correctamente accediendo a:
+El servicio está desplegado y puedes verificar que está funcionando correctamente accediendo a:
 
 ```
-https://tracking-api.onrender.com/health
+https://tracking-api-6omx.onrender.com/health
 ```
 
 Deberías recibir una respuesta como:
@@ -73,6 +118,50 @@ Para escalar, puedes cambiar a planes superiores desde el dashboard de Render.
 | RATE_LIMIT_MAX | Límite máximo de peticiones | 100 |
 | RATE_LIMIT_TIME_WINDOW | Ventana de tiempo para rate limit (ms) | 60000 |
 
+## Ejemplos de Uso en Producción
+
+> ⚠️ **Importante**: Usar la URL base: `https://tracking-api-6omx.onrender.com`
+
+### 1. Obtener Token de Autenticación
+
+```bash
+curl -X POST https://tracking-api-6omx.onrender.com/api/v1/token \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "prueba@coordinadora.com",
+    "password": "BFASDASer@dvhd3ysJ@r81"
+  }'
+```
+
+### 2. Consultar Estado de un Envío
+
+```bash
+curl https://tracking-api-6omx.onrender.com/api/v1/tracking/TRK001 \
+  -H "Authorization: Bearer tu-token"
+```
+
+### 3. Registrar un Nuevo Checkpoint
+
+```bash
+curl -X POST https://tracking-api-6omx.onrender.com/api/v1/checkpoints \
+  -H "Authorization: Bearer tu-token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "unitId": "UNIT001",
+    "trackingId": "TRK001",
+    "status": "IN_TRANSIT",
+    "location": "Miami, FL",
+    "description": "Paquete en tránsito"
+  }'
+```
+
+### 4. Listar Envíos por Estado
+
+```bash
+curl https://tracking-api-6omx.onrender.com/api/v1/shipments?status=IN_TRANSIT \
+  -H "Authorization: Bearer tu-token"
+```
+
 ## 🏗️ Principios Arquitectónicos
 
 ### Clean Architecture
@@ -91,7 +180,7 @@ El código adhiere a los principios SOLID:
 - **D**: Dependency Inversion - Dependencias hacia abstracciones
 
 ### Domain-Driven Design (DDD)
-Implementamos conceptos clave de DDD:
+Conceptos clave de DDD:
 - **Bounded Contexts**: Separación clara de dominios (tracking, shared)
 - **Entities**: Objetos con identidad y ciclo de vida
 - **Value Objects**: Objetos inmutables sin identidad
@@ -236,22 +325,22 @@ npm start
 ### Endpoints
 
 #### Authentication
-- `POST /token`
+- `POST /api/v1/token`
   - Get JWT token for API access
-  - Body: `{ "username": "user@email.com", "password": "******" }`
+  - Body: `{ "username": "prueba@coordinadora.com", "password": "BFASDASer@dvhd3ysJ@r81" }`
 
 #### Tracking
-- `POST /tracking/checkpoints`
+- `POST /api/v1/tracking/checkpoints`
   - Register new checkpoint
   - Auth required
   - Body: `{ "unitId": "123", "status": "DELIVERED", "location": "..." }`
 
-- `GET /tracking/units/{id}/history`
+- `GET /api/v1/tracking/units/{id}/history`
   - Get tracking history
   - Auth required
   - Returns: Array of checkpoints
 
-- `GET /tracking/units`
+- `GET /api/v1/tracking/units`
   - List units by status
   - Auth required
   - Query: `?status=IN_TRANSIT`
@@ -259,78 +348,65 @@ npm start
 
 ## 🚦 Uso
 
-### Desarrollo
+## Desarrollo Local
+
+### Iniciar el Servidor
 
 ```bash
+# Modo desarrollo con hot-reload
 npm run dev
-```
 
-### Producción
-
-```bash
+# O para producción
 npm run build
 npm start
+```
+
+### Ejemplos de Uso Local
+
+> ⚠️ **Nota**: Usar la URL base: `http://localhost:3000`
+
+1. Obtener token:
+```bash
+curl -X POST http://localhost:3000/api/v1/token \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "prueba@coordinadora.com",
+    "password": "BFASDASer@dvhd3ysJ@r81"
+  }'
+```
+
+2. Consultar tracking:
+```bash
+curl http://localhost:3000/api/v1/tracking/TRK001 \
+  -H "Authorization: Bearer tu-token"
+```
+
+3. Registrar checkpoint:
+```bash
+curl -X POST http://localhost:3000/api/v1/checkpoints \
+  -H "Authorization: Bearer tu-token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "unitId": "UNIT001",
+    "trackingId": "TRK001",
+    "status": "IN_TRANSIT",
+    "location": "Miami, FL",
+    "description": "Paquete en tránsito"
+  }'
 ```
 
 ### Tests
 
 ```bash
-npm test                 # Ejecutar todos los tests
-npm run test:watch      # Modo watch
-npm run test:coverage   # Cobertura
+npm test                 # Ejecuta todos los tests
+npm run test:unit        # Ejecuta los tests unitatios 
+npm run test:acceptance  # Ejecuta los tests de aceptación 
+npm run test:coverage    # Ejecuta los tests y muestra la cobertura del código.
 ```
 
-## 🔄 Endpoints
+## 🚦 Endpoints - ejemplos de Uso
 
 > ⚠️ **Nota**: Todos los endpoints requieren autenticación JWT en el header `Authorization: Bearer <token>`
-
-### Autenticación
-
-#### POST /oauth/token
-Obtiene un token de acceso usando credenciales de usuario.
-
-```json
-{
-  "username": "prueba@coordinadora.com",
-  "password": "BFASDASer@dvhd3ysJ@r81"
-}
-```
-
-Respuesta:
-```json
-{
-  "access_token": "eyJhbGc...",
-  "expires_in": 3600,
-  "token_type": "Bearer"
-}
-```
-
-### Checkpoints
-
-#### POST /api/v1/checkpoints
-Registra un nuevo checkpoint para una unidad.
-
-```json
-{
-  "unitId": "string",
-  "trackingId": "string",
-  "status": "string",
-  "timestamp": "string",
-  "location": "string",
-  "description": "string"
-}
-```
-
-#### GET /api/v1/tracking/:trackingId
-Obtiene el historial de tracking para un ID específico.
-
-#### GET /api/v1/shipments
-Lista unidades por estado.
-
-Query params:
-- \`status\`: Filtrar por estado (opcional)
-
-## � Ejemplos de Uso
 
 A continuación se muestra el flujo completo para probar los endpoints de la API:
 

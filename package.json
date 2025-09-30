@@ -14,7 +14,6 @@
     "dev:debug": "tsx --inspect-brk watch src/server.ts",
     "lint": "eslint \"{src,test}/**/*.ts\" --fix",
     "test": "npm run test:unit && npm run test:acceptance",
-    "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:unit": "jest --config jest.config.ts --testPathIgnorePatterns=integration --passWithNoTests",
     "test:acceptance": "NODE_PATH=./src cucumber-js --config cucumber.js --tags 'not @skip'",
