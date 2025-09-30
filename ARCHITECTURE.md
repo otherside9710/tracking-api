@@ -8,49 +8,113 @@ El sistema Tracking API es una solución diseñada para gestionar el seguimiento
 
 ## 📊 Diagramas de Arquitectura C4
 
-### Nivel 1: Diagrama de Contexto
-![C4 Context](docs/diagrams/C4_Code.png)
+### Nivel 1: Contexto del Sistema
 
-Este diagrama ilustra la interacción de alto nivel entre los diferentes actores del sistema:
+```mermaid
+graph TB
+    User[Usuario/Operador]
+    ExtSystem[Sistema Externo]
+    TrackingAPI[Sistema de Tracking API]
+    
+    User -->|Registra checkpoints| TrackingAPI
+    User -->|Consulta tracking| TrackingAPI
+    ExtSystem -->|Integración API| TrackingAPI
+    
+    style TrackingAPI fill:#f9f,stroke:#333,stroke-width:4px
+```
 
-- **Clientes Externos**: Sistemas y aplicaciones que consumen nuestra API
-  - Aplicaciones móviles
-  - Sistemas de gestión de flotas
-  - Portales web de seguimiento
-  
-- **Tracking API**: Nuestro sistema principal
-  - Gestiona la lógica de negocio del tracking
-  - Procesa y almacena los checkpoints
-  - Proporciona endpoints REST para consulta y actualización
-  
-- **Servicios Externos**:
-  - **Auth0**: Autenticación y autorización
-  - **Sentry**: Monitoreo y gestión de errores
+### Nivel 2: Contenedores
 
-### Nivel 2: Diagrama de Contenedores
-![C4 Container](docs/diagrams/C4_Container.png)
+```mermaid
+graph TB
+    subgraph "Sistema de Tracking"
+        API[API REST<br/>Node.js/Fastify]
+        Storage[(Almacenamiento<br/>In-Memory)]
+        Auth[Auth0<br/>Autenticación]
+        Sentry[Sentry<br/>Monitoreo]
+    end
+    
+    Client[Cliente Web/Mobile]
+    
+    Client -->|HTTPS| API
+    API -->|Read/Write| DB
+    API -->|Cache| Cache
+    API -->|Async Events| Queue
+    
+    style API fill:#f9f,stroke:#333,stroke-width:2px
+```
 
-Detalla los contenedores principales que componen el sistema:
+### Nivel 3: Componentes
 
-- **API Application (Node.js + Fastify)**
-  - Framework ligero y de alto rendimiento
-  - Arquitectura modular y escalable
-  - Implementación de API RESTful
+```mermaid
+graph TB
+    subgraph "Interfaces Layer"
+        Controllers[Controllers<br/>GetTrackingHistoryController<br/>ListUnitsByStatusController]
+        Middleware[Middleware<br/>Auth/Validation]
+        Routes[Routes<br/>healthRoutes<br/>trackingRoutes]
+    end
+    
+    subgraph "Application Layer"
+        UseCases[Use Cases<br/>GetTrackingHistory<br/>ListUnitsByStatus<br/>RegisterCheckpoint]
+        DTOs[DTOs<br/>CheckpointDTO<br/>UnitDTO]
+    end
+    
+    subgraph "Domain Layer"
+        Entities[Entities<br/>Unit<br/>Checkpoint<br/>CheckpointStatus]
+        Errors[Domain Errors<br/>DomainError<br/>TokenError]
+        Repos[Repository Interfaces<br/>IUnitRepository<br/>ICheckpointRepository]
+    end
+    
+    subgraph "Infrastructure Layer"
+        InMemoryRepos[In Memory Repositories<br/>InMemoryUnitRepository]
+        AuthService[Auth Services<br/>Auth0]
+        ErrorTracking[Error Tracking<br/>Sentry]
+    end
+    
+    Routes --> Controllers
+    Controllers --> Middleware
+    Middleware --> UseCases
+    UseCases --> DTOs
+    UseCases --> Services
+    Services --> Entities
+    Services --> DomainServices
+    UseCases --> Repositories
+    Repositories --> DB
+    
+    style UseCases fill:#f9f,stroke:#333,stroke-width:2px
+```
 
-- **In-Memory Storage**
-  - Almacenamiento rápido y eficiente
-  - Persistencia temporal de datos
-  - Optimizado para operaciones frecuentes
+### Nivel 4: Código - Flujo de Registro de Checkpoint
 
-- **External Services Integration**
-  - Interfaces con servicios de terceros
-  - Gestión de tokens y autenticación
-  - Monitoreo y logging
-
-### Nivel 3: Diagrama de Componentes
-![C4 Component](docs/diagrams/C4_Component.png)
-
-Visualiza la arquitectura interna siguiendo los principios de Clean Architecture:
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Controller
+    participant Middleware
+    participant UseCase
+    participant Repository
+    participant Domain
+    participant DB
+    
+    Client->>Controller: POST /api/v1/checkpoints
+    Controller->>Middleware: Validate Request
+    Middleware->>UseCase: Execute RegisterCheckpoint
+    UseCase->>Repository: Check Unit Exists
+    Repository->>DB: Query Unit
+    DB-->>Repository: Unit Data
+    Repository-->>UseCase: Unit Found
+    UseCase->>Domain: Create Checkpoint Entity
+    Domain-->>UseCase: Checkpoint Object
+    UseCase->>Repository: Save Checkpoint
+    Repository->>DB: Insert Checkpoint
+    DB-->>Repository: Success
+    Repository-->>UseCase: Saved Checkpoint
+    UseCase->>Repository: Update Unit Status
+    Repository->>DB: Update Unit
+    DB-->>Repository: Success
+    UseCase-->>Controller: CheckpointDTO
+    Controller-->>Client: 201 Created
+```
 
 1. **Capa de Interfaces**:
    - Controladores HTTP
@@ -88,23 +152,92 @@ Organización del código en contextos delimitados:
   - Servicios de autenticación
   - Utilidades comunes
 
-## 🛠 Generación de Diagramas
+## � Decisiones Arquitectónicas (ADRs)
 
-Los diagramas se generan utilizando PlantUML. Sigue estos pasos:
+### ADR-001: Clean Architecture
 
-```bash
-# 1. Instalar PlantUML (macOS)
-brew install plantuml
+**Estado:** Aceptado  
+**Fecha:** 2024  
+**Contexto:** Necesitamos una arquitectura que permita escalabilidad, mantenibilidad y testabilidad.  
+**Decisión:** Implementar Clean Architecture con separación clara de capas.  
+**Consecuencias:**
+- ✅ Alta mantenibilidad y testabilidad
+- ✅ Independencia de frameworks
+- ✅ Facilita cambios futuros
+- ⚠️ Mayor complejidad inicial
+- ⚠️ Más código boilerplate
 
-# 2. Verificar la instalación
-plantuml -version
+### ADR-002: Fastify como Framework HTTP
 
-# 3. Generar los diagramas
-plantuml docs/diagrams/*.puml
+**Estado:** Aceptado  
+**Fecha:** 2024  
+**Contexto:** Necesitamos alto rendimiento para manejar 1.2M checkpoints/día.  
+**Decisión:** Usar Fastify en lugar de Express.  
+**Consecuencias:**
+- ✅ 2x más rápido que Express
+- ✅ Validación de esquemas JSON incorporada
+- ✅ Mejor soporte para TypeScript
+- ⚠️ Ecosistema más pequeño que Express
 
-# 4. Verificar la generación
-ls -l docs/diagrams/*.png
-```
+[Ver más ADRs en la documentación completa]
+
+## 🚀 Escalabilidad y Performance
+
+### Estrategia de Escalamiento
+
+#### Escalamiento Horizontal
+- **Load Balancer:** HAProxy/Nginx para distribuir carga
+- **Instancias:** Mínimo 3 replicas en producción
+- **Auto-scaling:** Basado en CPU/Memoria y requests/segundo
+
+#### Optimizaciones de Performance
+1. **Caching Strategy:**
+   - Redis para tracking queries frecuentes
+   - TTL de 5 minutos para consultas de tracking
+   - Cache invalidation on checkpoint creation
+
+2. **Database Optimization:**
+   - Índices en: unitId, trackingId, status, timestamp
+   - Particionamiento por fecha (mensual)
+   - Read replicas para consultas
+
+### Métricas de Performance Objetivo
+
+| Métrica | Objetivo | Crítico |
+|---------|----------|----------|
+| Latencia P50 | < 50ms | < 100ms |
+| Latencia P99 | < 200ms | < 500ms |
+| Throughput | 15,000 req/s | 10,000 req/s |
+| Disponibilidad | 99.9% | 99.5% |
+| Error Rate | < 0.1% | < 1% |
+
+## 🔒 Seguridad
+
+### Medidas Implementadas
+1. **Autenticación:** 
+   - Auth0 para gestión de tokens
+   - JWT para autenticación de requests
+   - Variables de entorno seguras
+
+2. **Validación y Protección:**
+   - Validación de schemas JSON
+   - Rate limiting configurable
+   - CORS configurado por ambiente
+   - Headers seguros con Helmet
+
+3. **Configuración:**
+   - Variables de entorno para credenciales
+   - Diferentes configs por ambiente
+   - Logs sensibles sanitizados
+
+## 📊 Monitoreo y Observabilidad
+
+### Stack de Monitoreo
+- **Error Tracking:** Sentry para monitoreo de errores
+- **Logs:** Pino para logging estructurado
+- **Health Check:** Endpoint `/health` para monitoreo
+- **Deployment:** Monitoreo en Render
+- **Tests:** Cobertura > 90% con Jest
 
 ## 📚 Documentación Adicional
 
