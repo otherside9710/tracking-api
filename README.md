@@ -350,7 +350,14 @@ npm start
 
 ## Desarrollo Local
 
-### Iniciar el Servidor
+Este proyecto usa Docker para desarrollo. Para iniciar:
+
+```bash
+# Levantar el servicio con Docker
+docker-compose up --build
+```
+
+O si prefieres ejecutar directamente con Node:
 
 ```bash
 # Modo desarrollo con hot-reload
