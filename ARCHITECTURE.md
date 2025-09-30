@@ -208,7 +208,7 @@ Organización del código en contextos delimitados:
   - Servicios de autenticación
   - Utilidades comunes
 
-## � Decisiones Arquitectónicas (ADRs)
+## 🏛️ Decisiones Arquitectónicas (ADRs)
 
 ### ADR-001: Clean Architecture
 
