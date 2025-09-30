@@ -2,7 +2,7 @@ import { DomainError } from '@shared/domain/errors';
 
 export class TokenError extends DomainError {
   constructor(message: string) {
-    super('TokenError', message);
+    super(message, 'TOKEN_ERROR', 401);
   }
 
   static invalidCredentials(): TokenError {
