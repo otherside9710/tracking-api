@@ -36,7 +36,9 @@
     "pino-pretty": "^10.2.3",
     "reflect-metadata": "^0.2.2",
     "typeorm": "^0.3.24",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0"
   },
   "devDependencies": {
     "@cucumber/cucumber": "^11.3.0",
