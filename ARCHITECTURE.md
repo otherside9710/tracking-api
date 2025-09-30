@@ -20,7 +20,7 @@ graph TB
     User -->|Consulta tracking| TrackingAPI
     ExtSystem -->|Integración API| TrackingAPI
     
-    style TrackingAPI fill:#f9f,stroke:#333,stroke-width:4px
+    style TrackingAPI fill:#6E0B6E,stroke:#333,stroke-width:4px
 ```
 
 ### Nivel 2: Contenedores
@@ -41,7 +41,7 @@ graph TB
     API -->|Cache| Cache
     API -->|Async Events| Queue
     
-    style API fill:#f9f,stroke:#333,stroke-width:2px
+    style API fill:#6E0B6E,stroke:#333,stroke-width:2px
 ```
 
 ### Nivel 3: Componentes
@@ -81,7 +81,7 @@ graph TB
     UseCases --> Repositories
     Repositories --> DB
     
-    style UseCases fill:#f9f,stroke:#333,stroke-width:2px
+    style UseCases fill:#6E0B6E,stroke:#333,stroke-width:2px
 ```
 
 ### Nivel 4: Código - Flujo de Registro de Checkpoint
