@@ -4,19 +4,36 @@ on:
   push:
     branches:
       - main
+    tags:
+      - "v*.*.*"
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      NODE_ENV: ${{ secrets.NODE_ENV }}
+      PORT: ${{ secrets.PORT }}
+      HOST: ${{ secrets.HOST }}
+      LOG_LEVEL: ${{ secrets.LOG_LEVEL }}
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      ALLOWED_ORIGINS: ${{ secrets.ALLOWED_ORIGINS }}
+      AUTH0_BASE_URL: ${{ secrets.AUTH0_BASE_URL }}
+      AUTH0_CLIENT_ID: ${{ secrets.AUTH0_CLIENT_ID }}
+      AUTH0_CLIENT_SECRET: ${{ secrets.AUTH0_CLIENT_SECRET }}
+      AUTH0_AUDIENCE: ${{ secrets.AUTH0_AUDIENCE }}
+      AUTH0_GRANT_TYPE: ${{ secrets.AUTH0_GRANT_TYPE }}
+      RATE_LIMIT_MAX: ${{ secrets.RATE_LIMIT_MAX }}
+      RATE_LIMIT_TIME_WINDOW: ${{ secrets.RATE_LIMIT_TIME_WINDOW }}
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 23
+          node-version: "20"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -24,27 +41,54 @@ jobs:
       - name: Run tests
         run: npm test
 
+      - name: Build application
+        run: npm run build
+
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    if: success()
+    if: success() && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
 
     steps:
+      - name: Set deployment message
+        id: deploy_message
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            echo "message=Deploying version ${GITHUB_REF#refs/tags/} to Render" >> $GITHUB_OUTPUT
+          else
+            echo "message=Deploying commit ${GITHUB_SHA::7} to Render" >> $GITHUB_OUTPUT
+          fi
+
       - name: Trigger Render Deploy
-        run: curl -X POST "$RENDER_DEPLOY_HOOK_URL"
-        env:
-          env:
-          NODE_ENV: ${{ secrets.NODE_ENV }}
-          PORT: ${{ secrets.PORT }}
-          HOST: ${{ secrets.HOST }}
-          LOG_LEVEL: ${{ secrets.LOG_LEVEL }}
-          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-          ALLOWED_ORIGINS: ${{ secrets.ALLOWED_ORIGINS }}
-          AUTH0_BASE_URL: ${{ secrets.AUTH0_BASE_URL }}
-          AUTH0_CLIENT_ID: ${{ secrets.AUTH0_CLIENT_ID }}
-          AUTH0_CLIENT_SECRET: ${{ secrets.AUTH0_CLIENT_SECRET }}
-          AUTH0_AUDIENCE: ${{ secrets.AUTH0_AUDIENCE }}
-          AUTH0_GRANT_TYPE: ${{ secrets.AUTH0_GRANT_TYPE }}
-          RATE_LIMIT_MAX: ${{ secrets.RATE_LIMIT_MAX }}
-          RATE_LIMIT_TIME_WINDOW: ${{ secrets.RATE_LIMIT_TIME_WINDOW }}
-          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          echo "Initiating deployment: ${{ steps.deploy_message.outputs.message }}"
+          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d '{"deploy_message":"${{ steps.deploy_message.outputs.message }}"}' \
+            --fail --silent --show-error || {
+              echo "Failed to trigger Render deployment"
+              exit 1
+            }
+
+      - name: Verify deployment
+        run: |
+          echo "Waiting for deployment to complete..."
+          sleep 30  # Give Render some time to start the deployment
+
+          # Verificar que el servicio está respondiendo
+          MAX_RETRIES=10
+          RETRY_COUNT=0
+
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            if curl -s "${{ secrets.RENDER_SERVICE_URL }}/health" | grep -q '"status":"ok"'; then
+              echo "Deployment verified successfully!"
+              exit 0
+            fi
+            
+            echo "Service not ready yet, retrying in 30 seconds..."
+            sleep 30
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+          done
+
+          echo "Deployment verification failed after $MAX_RETRIES attempts"
+          exit 1
