@@ -81,7 +81,7 @@ export async function authMiddleware(
     }) as jwt.JwtPayload;
 
     // Añadir la información del usuario al request para uso posterior
-    request.user = decoded;
+    console.log(decoded);
   } catch (error) {
     if (error instanceof UnauthorizedError) {
       throw error;

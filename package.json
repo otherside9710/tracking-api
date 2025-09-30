@@ -8,7 +8,7 @@
   "scripts": {
     "build": "tsc",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "node dist/server.js",
+    "start": "ts-node -r ./register-paths.ts dist/server.js",
     "dev": "tsx watch src/server.ts",
     "dev:debug": "tsx --inspect-brk watch src/server.ts",
     "lint": "eslint \"{src,test}/**/*.ts\" --fix",
