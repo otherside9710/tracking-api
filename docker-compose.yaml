@@ -2,12 +2,37 @@ version: "3.8"
 
 services:
   tracking-api:
-    build: .
+    build:
+      context: .
+      target: development
+      args:
+        - NODE_ENV=development
+        - PORT=3000
+        - HOST=0.0.0.0
+        - LOG_LEVEL=debug
+        - ALLOWED_ORIGINS=*
+        - RATE_LIMIT_MAX=100
+        - RATE_LIMIT_TIME_WINDOW=60000
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
       - PORT=3000
+      - HOST=0.0.0.0
+      - LOG_LEVEL=debug
+      - ALLOWED_ORIGINS=*
+      - AUTH0_BASE_URL=${AUTH0_BASE_URL}
+      - AUTH0_CLIENT_ID=${AUTH0_CLIENT_ID}
+      - AUTH0_CLIENT_SECRET=${AUTH0_CLIENT_SECRET}
+      - AUTH0_AUDIENCE=${AUTH0_AUDIENCE}
+      - AUTH0_GRANT_TYPE=${AUTH0_GRANT_TYPE}
+      - RATE_LIMIT_MAX=100
+      - RATE_LIMIT_TIME_WINDOW=60000
     volumes:
-      - .:/app
-      - /app/node_modules
+      - ./src:/app/src
+      - ./test:/app/test
+      - ./package.json:/app/package.json
+      - ./package-lock.json:/app/package-lock.json
+      - ./tsconfig.json:/app/tsconfig.json
+      - ./tsconfig.build.json:/app/tsconfig.build.json
+    command: npm run dev

@@ -1,4 +1,4 @@
-FROM node:20-alpine as builder
+FROM node:20-alpine as development
 
 WORKDIR /app
 
@@ -7,11 +7,13 @@ COPY tsconfig*.json ./
 
 RUN npm install
 
-COPY src/ ./src/
+COPY . .
+
+FROM development as builder
 
 RUN npm run build
 
-FROM node:20-alpine
+FROM node:20-alpine as production
 
 # Argumentos de construcción
 ARG NODE_ENV
