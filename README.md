@@ -12,6 +12,8 @@ La API está desplegada y disponible en:
 https://tracking-api-6omx.onrender.com
 ```
 
+> ⏳ **Nota sobre el despliegue**: La API está alojada en la capa gratuita de Render para propósitos de esta prueba. Después de 15 minutos de inactividad, el servicio entra en modo suspensión. Al realizar la primera petición, esperar aproximadamente 2 minutos mientras el servicio se reactiva para volver a usarla.
+
 ### 🏎️ Endpoints Principales
 
 - Health Check: `GET /health`
