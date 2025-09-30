@@ -6,9 +6,10 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && tsc-alias",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "ts-node -r tsconfig-paths/register src/server.ts",
+    "start": "node dist/server.js",
+    "start-dev": "ts-node -r tsconfig-paths/register src/server.ts",
     "dev": "tsx watch src/server.ts",
     "dev:debug": "tsx --inspect-brk watch src/server.ts",
     "lint": "eslint \"{src,test}/**/*.ts\" --fix",
@@ -35,10 +36,10 @@
     "pino": "^8.16.1",
     "pino-pretty": "^10.2.3",
     "reflect-metadata": "^0.2.2",
-    "typeorm": "^0.3.24",
-    "uuid": "^9.0.1",
     "ts-node": "^10.9.2",
-    "tsconfig-paths": "^4.2.0"
+    "tsc-alias": "^1.8.16",
+    "tsconfig-paths": "^4.2.0",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@cucumber/cucumber": "^11.3.0",
