@@ -213,7 +213,7 @@ Organización del código en contextos delimitados:
 ### ADR-001: Clean Architecture
 
 **Estado:** Aceptado  
-**Fecha:** 2024  
+**Fecha:** Sep 2025
 **Contexto:** Necesitamos una arquitectura que permita escalabilidad, mantenibilidad y testabilidad.  
 **Decisión:** Implementar Clean Architecture con separación clara de capas.  
 **Consecuencias:**
