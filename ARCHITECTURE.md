@@ -35,11 +35,13 @@ graph TB
     end
     
     Client[Cliente Web/Mobile]
+    ExtSystems[Sistemas Externos]
     
     Client -->|HTTPS| API
-    API -->|Read/Write| DB
-    API -->|Cache| Cache
-    API -->|Async Events| Queue
+    ExtSystems -->|HTTPS| API
+    API -->|Read/Write| Storage
+    API -->|Autenticar| Auth
+    API -->|Logs/Errores| Sentry
     
     style API fill:#6E0B6E,stroke:#333,stroke-width:2px
 ```
@@ -49,37 +51,76 @@ graph TB
 ```mermaid
 graph TB
     subgraph "Interfaces Layer"
-        Controllers[Controllers<br/>GetTrackingHistoryController<br/>ListUnitsByStatusController]
-        Middleware[Middleware<br/>Auth/Validation]
-        Routes[Routes<br/>healthRoutes<br/>trackingRoutes]
+        subgraph "Health"
+            HealthRoutes[Health Routes]
+            HealthController[Health Controller]
+        end
+        
+        subgraph "Token"
+            TokenRoutes[Token Routes]
+            TokenController[Token Controller]
+            TokenValidator[Token Validator]
+        end
+        
+        subgraph "Tracking"
+            TrackingRoutes[Tracking Routes]
+            TrackingControllers[Tracking Controllers<br/>GetTrackingHistory<br/>ListUnitsByStatus<br/>RegisterCheckpoint]
+            AuthMiddleware[Auth Middleware]
+        end
     end
     
     subgraph "Application Layer"
-        UseCases[Use Cases<br/>GetTrackingHistory<br/>ListUnitsByStatus<br/>RegisterCheckpoint]
-        DTOs[DTOs<br/>CheckpointDTO<br/>UnitDTO]
+        subgraph "Tracking Use Cases"
+            GetTrackingHistory[GetTrackingHistory]
+            ListUnitsByStatus[ListUnitsByStatus]
+            RegisterCheckpoint[RegisterCheckpoint]
+        end
+        
+        subgraph "Token Use Cases"
+            GetTokenUseCase[GetTokenUseCase]
+        end
     end
     
     subgraph "Domain Layer"
-        Entities[Entities<br/>Unit<br/>Checkpoint<br/>CheckpointStatus]
-        Errors[Domain Errors<br/>DomainError<br/>TokenError]
-        Repos[Repository Interfaces<br/>IUnitRepository<br/>ICheckpointRepository]
+        subgraph "Tracking Domain"
+            TrackingEntities[Entities<br/>Unit<br/>Checkpoint<br/>CheckpointStatus]
+            TrackingRepos[Repository Interfaces<br/>IUnitRepository<br/>ICheckpointRepository]
+        end
+        
+        subgraph "Shared Domain"
+            DomainErrors[Domain Errors<br/>DomainError<br/>TokenError<br/>CommonErrors]
+        end
     end
     
     subgraph "Infrastructure Layer"
-        InMemoryRepos[In Memory Repositories<br/>InMemoryUnitRepository]
-        AuthService[Auth Services<br/>Auth0]
-        ErrorTracking[Error Tracking<br/>Sentry]
+        InMemoryRepos[In Memory Repositories]
+        Auth0Service[Auth0 Service]
+        SentryService[Sentry Service]
     end
     
-    Routes --> Controllers
-    Controllers --> Middleware
-    Middleware --> UseCases
-    UseCases --> DTOs
-    UseCases --> Services
-    Services --> Entities
-    Services --> DomainServices
-    UseCases --> Repositories
-    Repositories --> DB
+    %% Relaciones de interfaces
+    HealthRoutes --> HealthController
+    TokenRoutes --> TokenController
+    TrackingRoutes --> TrackingControllers
+    TrackingRoutes --> AuthMiddleware
+    
+    %% Relaciones de casos de uso
+    TrackingControllers --> GetTrackingHistory
+    TrackingControllers --> ListUnitsByStatus
+    TrackingControllers --> RegisterCheckpoint
+    TokenController --> GetTokenUseCase
+    
+    %% Relaciones con el dominio
+    GetTrackingHistory --> TrackingRepos
+    ListUnitsByStatus --> TrackingRepos
+    RegisterCheckpoint --> TrackingRepos
+    GetTokenUseCase --> Auth0Service
+    
+    %% Relaciones con infraestructura
+    TrackingRepos --> InMemoryRepos
+    AuthMiddleware --> Auth0Service
+    
+    style TrackingControllers fill:#6E0B6E,stroke:#333,stroke-width:2px
     
     style UseCases fill:#6E0B6E,stroke:#333,stroke-width:2px
 ```
@@ -89,31 +130,34 @@ graph TB
 ```mermaid
 sequenceDiagram
     participant Client
-    participant Controller
-    participant Middleware
-    participant UseCase
-    participant Repository
-    participant Domain
-    participant DB
+    participant TrackingRoutes
+    participant AuthMiddleware
+    participant RegisterCheckpoint
+    participant InMemoryRepo
+    participant Unit
+    participant Checkpoint
     
-    Client->>Controller: POST /api/v1/checkpoints
-    Controller->>Middleware: Validate Request
-    Middleware->>UseCase: Execute RegisterCheckpoint
-    UseCase->>Repository: Check Unit Exists
-    Repository->>DB: Query Unit
-    DB-->>Repository: Unit Data
-    Repository-->>UseCase: Unit Found
-    UseCase->>Domain: Create Checkpoint Entity
-    Domain-->>UseCase: Checkpoint Object
-    UseCase->>Repository: Save Checkpoint
-    Repository->>DB: Insert Checkpoint
-    DB-->>Repository: Success
-    Repository-->>UseCase: Saved Checkpoint
-    UseCase->>Repository: Update Unit Status
-    Repository->>DB: Update Unit
-    DB-->>Repository: Success
-    UseCase-->>Controller: CheckpointDTO
-    Controller-->>Client: 201 Created
+    Client->>TrackingRoutes: POST /api/v1/checkpoints
+    TrackingRoutes->>AuthMiddleware: Validate JWT Token
+    AuthMiddleware->>Auth0: Verify Token
+    Auth0-->>AuthMiddleware: Token Valid
+    
+    TrackingRoutes->>RegisterCheckpoint: Execute(checkpointData)
+    RegisterCheckpoint->>InMemoryRepo: findUnitById(unitId)
+    InMemoryRepo-->>RegisterCheckpoint: unit
+    
+    RegisterCheckpoint->>Unit: addCheckpoint(checkpointData)
+    Unit->>Checkpoint: create(data)
+    Checkpoint-->>Unit: newCheckpoint
+    Unit-->>RegisterCheckpoint: updatedUnit
+    
+    RegisterCheckpoint->>InMemoryRepo: save(unit)
+    InMemoryRepo-->>RegisterCheckpoint: success
+    
+    RegisterCheckpoint-->>TrackingRoutes: CheckpointDTO
+    TrackingRoutes-->>Client: 201 Created
+    
+    Note over Client,TrackingRoutes: Includes error handling for:<br/>- Token inválido<br/>- Unit no encontrada<br/>- Datos inválidos
 ```
 
 1. **Capa de Interfaces**:
