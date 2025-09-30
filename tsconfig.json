@@ -45,5 +45,11 @@
     "test",
     "src/contexts/shared/infrastructure/types/**/*.d.ts",
     "jest.config.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "test",
+    "**/*.spec.ts",
+    "**/*.test.ts"
   ]
 }
