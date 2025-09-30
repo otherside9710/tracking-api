@@ -1,4 +1,4 @@
-FROM node:20-alpine as builder
+FROM node:23-alpine as builder
 
 WORKDIR /app
 
@@ -11,7 +11,7 @@ COPY src/ ./src/
 
 RUN npm run build
 
-FROM node:20-alpine
+FROM node:23-alpine
 
 # Argumentos de construcción
 ARG NODE_ENV
