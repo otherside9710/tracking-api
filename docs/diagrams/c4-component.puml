@@ -1,0 +1,24 @@
+@startuml C4_Component
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+Container_Boundary(api, "API Application") {
+    Component(interfaces, "Interfaces Layer", "HTTP/REST", "Controladores, rutas y validadores")
+    Component(application, "Application Layer", "Use Cases", "Casos de uso y lógica de aplicación")
+    Component(domain, "Domain Layer", "Entities", "Entidades y reglas de negocio")
+    Component(infrastructure, "Infrastructure Layer", "Repositories", "Implementaciones técnicas")
+    
+    Rel(interfaces, application, "Usa")
+    Rel(application, domain, "Usa")
+    Rel(application, infrastructure, "Usa")
+    Rel(infrastructure, domain, "Implementa")
+}
+
+ContainerDb(memory_db, "In-Memory Storage", "Memory", "Almacenamiento temporal")
+System_Ext(auth0, "Auth0", "Autenticación")
+
+Rel(interfaces, auth0, "Valida tokens", "HTTPS")
+Rel(infrastructure, memory_db, "Lee/Escribe", "In-Memory")
+
+@enduml

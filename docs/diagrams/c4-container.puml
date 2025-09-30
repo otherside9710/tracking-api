@@ -1,0 +1,21 @@
+@startuml C4_Container
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+
+Person(client, "Client", "Sistema externo que consume la API de tracking")
+
+System_Boundary(tracking_system, "Tracking System") {
+    Container(api, "API Application", "Node.js + Fastify", "Maneja las peticiones HTTP y expone la API REST")
+    ContainerDb(memory_db, "In-Memory Storage", "Memory", "Almacenamiento temporal de datos")
+}
+
+System_Ext(auth0, "Auth0", "Servicio de autenticación")
+System_Ext(sentry, "Sentry", "Monitoreo de errores")
+
+Rel(client, api, "Hace peticiones a", "HTTPS/REST")
+Rel(api, memory_db, "Lee/Escribe", "In-Memory")
+Rel(api, auth0, "Valida tokens y autenticación", "HTTPS/OAuth2")
+Rel(api, sentry, "Reporta errores", "HTTPS")
+
+@enduml

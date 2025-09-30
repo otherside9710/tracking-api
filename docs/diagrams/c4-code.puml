@@ -1,0 +1,28 @@
+@startuml C4_Code
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+Container_Boundary(tracking, "Tracking Context") {
+  Component(Entities, "Entities", "Domain model", "Unit, Checkpoint, CheckpointStatus")
+  Component(Repositories, "Repositories", "Repository interfaces", "IUnitRepository, ICheckpointRepository")
+  Component(UseCases, "UseCases", "Application services", "GetTrackingHistory, ListUnitsByStatus, RegisterCheckpoint")
+  Component(Controllers, "Controllers", "API controllers", "GetTrackingHistoryController, etc.")
+  
+  Rel(Controllers, UseCases, "Usa")
+  Rel(UseCases, Repositories, "Usa")
+  Rel(UseCases, Entities, "Manipula")
+  Rel(Repositories, Entities, "Gestiona")
+}
+
+Container_Boundary(shared, "Shared Context") {
+  Component(Errors, "Domain Errors", "Shared domain errors", "DomainError, TokenError, etc.")
+  Component(Auth, "Auth Services", "Authentication", "AuthService")
+  
+  Rel(UseCases, Errors, "Usa")
+  Rel(Controllers, Auth, "Valida")
+}
+
+@enduml

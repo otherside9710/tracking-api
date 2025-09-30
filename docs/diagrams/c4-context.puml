@@ -1,0 +1,15 @@
+@startuml C4_Context
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+LAYOUT_WITH_LEGEND()
+
+Person(client, "Client", "Sistema externo que consume la API de tracking")
+System(tracking_api, "Tracking API", "API REST para seguimiento de envíos")
+System_Ext(auth0, "Auth0", "Servicio de autenticación")
+System_Ext(sentry, "Sentry", "Monitoreo de errores")
+
+Rel(client, tracking_api, "Usa", "HTTPS/REST")
+Rel(tracking_api, auth0, "Autenticación", "HTTPS/OAuth2")
+Rel(tracking_api, sentry, "Reporta errores", "HTTPS")
+
+@enduml

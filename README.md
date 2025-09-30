@@ -2,6 +2,8 @@
 
 API REST para el seguimiento de envíos, implementada con Node TS + Clean Architecture + DDD.
 
+> 📐 Ver [documentación detallada de la arquitectura](./ARCHITECTURE.md) con diagramas C4 (Contexto, Contenedores, Componentes y Código).
+
 ## URL del Servicio
 
 La API está desplegada y disponible en:
