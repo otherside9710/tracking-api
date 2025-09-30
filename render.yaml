@@ -1,0 +1,37 @@
+services:
+  - type: web
+    name: tracking-api
+    env: docker
+    region: oregon
+    plan: free
+    branch: main
+    dockerfilePath: ./Dockerfile
+    numInstances: 1
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: HOST
+        value: 0.0.0.0
+      - key: LOG_LEVEL
+        value: info
+      - key: SENTRY_DSN
+        sync: false
+      - key: ALLOWED_ORIGINS
+        value: "*"
+      - key: AUTH0_BASE_URL
+        sync: false
+      - key: AUTH0_CLIENT_ID
+        sync: false
+      - key: AUTH0_CLIENT_SECRET
+        sync: false
+      - key: AUTH0_AUDIENCE
+        sync: false
+      - key: AUTH0_GRANT_TYPE
+        sync: false
+      - key: RATE_LIMIT_MAX
+        value: 100
+      - key: RATE_LIMIT_TIME_WINDOW
+        value: 60000

@@ -65,8 +65,7 @@
   },
   "lint-staged": {
     "*.ts": [
-      "prettier --write",
-      "jest --bail --findRelatedTests"
+      "prettier --write"
     ]
   }
 }

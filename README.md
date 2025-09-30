@@ -2,6 +2,77 @@
 
 API REST para el seguimiento de envíos, implementada con Clean Architecture y TypeScript.
 
+## Despliegue en Render
+
+### Pre-requisitos
+
+1. Tener una cuenta en [Render](https://render.com)
+2. Tener el repositorio conectado con Render
+
+### Pasos para el despliegue
+
+1. Ve a tu dashboard en Render
+2. Haz clic en "New" y selecciona "Web Service"
+3. Conecta con el repositorio de GitHub
+4. Render detectará automáticamente la configuración en el archivo `render.yaml`
+5. Configura las siguientes variables de entorno en Render:
+
+   - `SENTRY_DSN`: Tu DSN de Sentry
+   - `AUTH0_BASE_URL`: URL base de Auth0
+   - `AUTH0_CLIENT_ID`: Client ID de Auth0
+   - `AUTH0_CLIENT_SECRET`: Client Secret de Auth0
+   - `AUTH0_AUDIENCE`: Audience de Auth0
+   - `AUTH0_GRANT_TYPE`: Grant Type de Auth0
+
+   Las demás variables ya están configuradas en el archivo `render.yaml`
+
+6. Haz clic en "Create Web Service"
+
+### Verificación del despliegue
+
+Una vez desplegado, puedes verificar que el servicio está funcionando correctamente accediendo a:
+
+```
+https://tracking-api.onrender.com/health
+```
+
+Deberías recibir una respuesta como:
+```json
+{
+  "status": "ok",
+  "timestamp": "2025-09-29T22:59:33.179Z"
+}
+```
+
+### Monitoreo
+
+- El endpoint `/health` es monitoreado automáticamente por Render
+- Si el endpoint falla, Render intentará reiniciar el servicio
+- Puedes ver los logs en tiempo real desde el dashboard de Render
+
+### Escalado
+
+El plan inicial (starter) incluye:
+- 512 MB de RAM
+- 0.1 CPU compartido
+- Construcción automática desde GitHub
+- Certificado SSL automático
+- Dominio personalizado de Render
+
+Para escalar, puedes cambiar a planes superiores desde el dashboard de Render.
+
+### Variables de Entorno
+
+| Variable | Descripción | Valor por defecto |
+|----------|-------------|-------------------|
+| NODE_ENV | Entorno de ejecución | production |
+| PORT | Puerto de la aplicación | 3000 |
+| HOST | Host de la aplicación | 0.0.0.0 |
+| LOG_LEVEL | Nivel de logging | info |
+| ALLOWED_ORIGINS | CORS origins permitidos | * |
+| RATE_LIMIT_MAX | Límite máximo de peticiones | 100 |
+| RATE_LIMIT_TIME_WINDOW | Ventana de tiempo para rate limit (ms) | 60000 |
+
 ## 🏗️ Principios Arquitectónicos
 
 ### Clean Architecture

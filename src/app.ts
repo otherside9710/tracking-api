@@ -6,6 +6,7 @@ import { config as dotenvConfig } from 'dotenv';
 import { config, validateConfig } from '@app/config/environment';
 import { checkpointRoutes } from '@app/interfaces/tracking/http/routes';
 import { tokenRoutes } from '@app/interfaces/token/http/routes';
+import { healthRoutes } from '@app/interfaces/health/routes/healthRoutes';
 import { DependencyContainer } from '@app/config/dependencies';
 import { errorHandler } from '@app/interfaces/tracking/http/middlewares';
 
@@ -16,21 +17,24 @@ export async function buildApp() {
   const fastify = Fastify({
     logger: {
       level: config.logging.level,
-      transport: config.server.environment !== 'production' ? {
-        target: 'pino-pretty'
-      } : undefined
-    }
+      transport:
+        config.server.environment !== 'production'
+          ? {
+              target: 'pino-pretty',
+            }
+          : undefined,
+    },
   });
 
   await fastify.register(cors, {
-    origin: config.cors.allowedOrigins
+    origin: config.cors.allowedOrigins,
   });
-  
+
   await fastify.register(helmet);
-  
+
   await fastify.register(rateLimit, {
     max: config.rateLimit.max,
-    timeWindow: config.rateLimit.timeWindow
+    timeWindow: config.rateLimit.timeWindow,
   });
 
   //DI (Dependency Injection)
@@ -38,23 +42,20 @@ export async function buildApp() {
     getTrackingHistoryController,
     listUnitsByStatusController,
     registerCheckpointController,
-    getTokenController
+    getTokenController,
   } = DependencyContainer.getControllers();
 
   // Register routes
+  await healthRoutes(fastify);
+
   await checkpointRoutes(
     fastify,
     getTrackingHistoryController,
     listUnitsByStatusController,
-    registerCheckpointController
+    registerCheckpointController,
   );
 
-  await tokenRoutes(
-    fastify,
-    getTokenController
-  );
-
-  fastify.get('/health', async () => ({ status: 'ok', timestamp: new Date().toISOString() }));
+  await tokenRoutes(fastify, getTokenController);
 
   fastify.setErrorHandler(errorHandler);
 
