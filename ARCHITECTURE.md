@@ -31,7 +31,7 @@ graph TB
         API[API REST<br/>Node.js/Fastify]
         Storage[(Almacenamiento<br/>In-Memory)]
         Auth[Auth0<br/>Autenticación]
-        Sentry[Sentry<br/>Monitoreo]
+        Sentry[Sentry<br/>Error Tracking]
     end
     
     Client[Cliente Web/Mobile]
@@ -41,7 +41,9 @@ graph TB
     ExtSystems -->|HTTPS| API
     API -->|Read/Write| Storage
     API -->|Autenticar| Auth
-    API -->|Logs/Errores| Sentry
+    API -.->|Errores Operacionales| Sentry
+    Storage -.->|Errores de Datos| Sentry
+    Auth -.->|Errores de Auth| Sentry
     
     style API fill:#6E0B6E,stroke:#333,stroke-width:2px
 ```
@@ -95,7 +97,7 @@ graph TB
     subgraph "Infrastructure Layer"
         InMemoryRepos[In Memory Repositories]
         Auth0Service[Auth0 Service]
-        SentryService[Sentry Service]
+        SentryService[Error Tracking<br/>Sentry]
     end
     
     %% Relaciones de interfaces
@@ -103,6 +105,7 @@ graph TB
     TokenRoutes --> TokenController
     TrackingRoutes --> TrackingControllers
     TrackingRoutes --> AuthMiddleware
+    TokenValidator --> TokenController
     
     %% Relaciones de casos de uso
     TrackingControllers --> GetTrackingHistory
@@ -115,14 +118,23 @@ graph TB
     ListUnitsByStatus --> TrackingRepos
     RegisterCheckpoint --> TrackingRepos
     GetTokenUseCase --> Auth0Service
+    RegisterCheckpoint --> TrackingEntities
+    GetTrackingHistory --> TrackingEntities
+    ListUnitsByStatus --> TrackingEntities
     
     %% Relaciones con infraestructura
     TrackingRepos --> InMemoryRepos
     AuthMiddleware --> Auth0Service
     
+    %% Manejo de errores
+    DomainErrors -.->|Captura de Errores| SentryService
+    InMemoryRepos -.->|Errores de Storage| SentryService
+    Auth0Service -.->|Errores de Auth| SentryService
+    TrackingControllers -.->|Errores Operacionales| SentryService
+    TokenController -.->|Errores de Token| SentryService
+    
     style TrackingControllers fill:#6E0B6E,stroke:#333,stroke-width:2px
     
-    style UseCases fill:#6E0B6E,stroke:#333,stroke-width:2px
 ```
 
 ### Nivel 4: Código - Flujo de Registro de Checkpoint
@@ -227,7 +239,7 @@ Organización del código en contextos delimitados:
 
 ## 🚀 Escalabilidad y Performance
 
-### Estrategia de Escalamiento
+### Estrategia de Escalamiento (Propuesta)
 
 #### Escalamiento Horizontal
 - **Load Balancer:** HAProxy/Nginx para distribuir carga
