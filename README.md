@@ -324,6 +324,50 @@ npm run build
 npm start
 ```
 
+### Características de Seguridad
+- Autenticación JWT
+- Rate Limiting
+- CORS configurable
+- Headers seguros con Helmet
+- Manejo de errores de autenticación
+
+## 👀 Monitoreo de Errores
+
+El proyecto utiliza Sentry para el monitoreo y tracking de errores en producción.
+
+### Dashboard de Sentry
+- URL: https://jp-developers.sentry.io/issues/?project=4510089284550656
+- Usuario: jsarmientop.inca@gmail.com
+- Contraseña: trackingapp123
+
+> ⚠️ **Nota de Seguridad**: Estas credenciales son solo para propósitos de este reto tecnico.
+
+### Características del Monitoreo
+- Tracking de errores en tiempo real
+- Contexto detallado de errores
+- Información de la petición HTTP
+- Trazas de pila completas
+- Segmentación por ambiente (development/production)
+- Alertas configurables
+
+
+## 🧪 Testing
+
+El proyecto incluye:
+- Tests unitarios
+- Tests de integración
+- Cobertura de código
+
+## 📦 Scripts Disponibles
+
+- \`npm run dev\`: Desarrollo con hot-reload
+- \`npm run build\`: Compilar TypeScript
+- \`npm start\`: Ejecutar versión compilada
+- \`npm run lint\`: Ejecutar ESLint
+- \`npm run format\`: Formatear código
+- \`npm test\`: Ejecutar tests
+- \`npm run build:clean\`: Limpiar y reconstruir
+
 ## 📝 API Reference
 
 ### Endpoints
@@ -510,50 +554,6 @@ curl -X GET http://localhost:3000/api/v1/shipments \
 ```
 
 > ⚠️ **Nota**: Las credenciales mostradas son solo para propósitos de desarrollo y pruebas.
-
-### Características de Seguridad
-- Autenticación JWT
-- Rate Limiting
-- CORS configurable
-- Headers seguros con Helmet
-- Manejo de errores de autenticación
-
-## 👀 Monitoreo de Errores
-
-El proyecto utiliza Sentry para el monitoreo y tracking de errores en producción.
-
-### Dashboard de Sentry
-- URL: https://jp-developers.sentry.io/issues/?project=4510089284550656
-- Usuario: jsarmientop.inca@gmail.com
-- Contraseña: trackingapp123
-
-> ⚠️ **Nota de Seguridad**: Estas credenciales son solo para propósitos de este reto tecnico.
-
-### Características del Monitoreo
-- Tracking de errores en tiempo real
-- Contexto detallado de errores
-- Información de la petición HTTP
-- Trazas de pila completas
-- Segmentación por ambiente (development/production)
-- Alertas configurables
-
-
-## 🧪 Testing
-
-El proyecto incluye:
-- Tests unitarios
-- Tests de integración
-- Cobertura de código
-
-## 📦 Scripts Disponibles
-
-- \`npm run dev\`: Desarrollo con hot-reload
-- \`npm run build\`: Compilar TypeScript
-- \`npm start\`: Ejecutar versión compilada
-- \`npm run lint\`: Ejecutar ESLint
-- \`npm run format\`: Formatear código
-- \`npm test\`: Ejecutar tests
-- \`npm run build:clean\`: Limpiar y reconstruir
 
 ## 🤝 Contribuir
 
