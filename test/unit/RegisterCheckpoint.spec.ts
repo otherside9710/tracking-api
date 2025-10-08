@@ -50,14 +50,27 @@ describe('RegisterCheckpointUseCase', () => {
 
     const updateStatusMock = jest.fn();
     unitRepository.exists.mockResolvedValue(true);
-    unitRepository.findById.mockResolvedValue({
+    const mockUnit = {
       id: dto.unitId,
       trackingId: dto.trackingId,
       currentStatus: CheckpointStatus.CREATED,
-      updateStatus: updateStatusMock,
       createdAt: new Date(),
       lastUpdated: new Date(),
-    });
+      checkpointHistory: [],
+      updateStatus: jest.fn().mockImplementation(function (
+        this: any,
+        status: CheckpointStatus,
+        checkpoint: any,
+      ) {
+        this.currentStatus = status;
+        this.checkpointHistory.push(checkpoint);
+        this.lastUpdated = new Date();
+      }),
+    };
+
+    // Bind the updateStatus function to the mockUnit
+    mockUnit.updateStatus = mockUnit.updateStatus.bind(mockUnit);
+    unitRepository.findById.mockResolvedValue(mockUnit);
     checkpointRepository.exists.mockResolvedValue(false);
     checkpointRepository.create.mockImplementation(
       async (checkpoint) => checkpoint,

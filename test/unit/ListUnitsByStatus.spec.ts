@@ -1,5 +1,6 @@
 import { ListUnitsByStatusUseCase } from '@tracking/application/use-cases';
-import { Unit, CheckpointStatus } from '@tracking/domain/entities';
+import { Unit, CheckpointStatus, Checkpoint } from '@tracking/domain/entities';
+import { UnitResponseDTO } from '@tracking/application/dto';
 import { InvalidCheckpointStatusError } from '@shared/domain/errors';
 
 describe('ListUnitsByStatusUseCase', () => {
@@ -17,19 +18,45 @@ describe('ListUnitsByStatusUseCase', () => {
     jest.clearAllMocks();
   });
 
-  it('should list units by provided status', async () => {
+  it('should list units by provided status including units that have passed through that status', async () => {
+    const mockDate = new Date('2025-09-30T12:00:00Z');
     const mockUnits = [
       new Unit({
         id: 'UNIT001',
         trackingId: 'TRK001',
-        currentStatus: CheckpointStatus.IN_TRANSIT,
-        lastUpdated: new Date('2025-09-30T12:00:00Z'),
+        currentStatus: CheckpointStatus.DELIVERED,
+        lastUpdated: mockDate,
+        checkpointHistory: [
+          new Checkpoint({
+            id: 'CP001',
+            unitId: 'UNIT001',
+            trackingId: 'TRK001',
+            status: CheckpointStatus.IN_TRANSIT,
+            timestamp: mockDate,
+          }),
+          new Checkpoint({
+            id: 'CP002',
+            unitId: 'UNIT001',
+            trackingId: 'TRK001',
+            status: CheckpointStatus.DELIVERED,
+            timestamp: new Date('2025-09-30T13:00:00Z'),
+          }),
+        ],
       }),
       new Unit({
         id: 'UNIT002',
         trackingId: 'TRK002',
         currentStatus: CheckpointStatus.IN_TRANSIT,
-        lastUpdated: new Date('2025-09-30T13:00:00Z'),
+        lastUpdated: mockDate,
+        checkpointHistory: [
+          new Checkpoint({
+            id: 'CP003',
+            unitId: 'UNIT002',
+            trackingId: 'TRK002',
+            status: CheckpointStatus.IN_TRANSIT,
+            timestamp: mockDate,
+          }),
+        ],
       }),
     ];
 
@@ -39,8 +66,11 @@ describe('ListUnitsByStatusUseCase', () => {
 
     expect(result).toHaveLength(2);
     expect(result[0].id).toBe('UNIT001');
-    expect(result[0].currentStatus).toBe(CheckpointStatus.IN_TRANSIT);
+    expect(result[0].currentStatus).toBe(CheckpointStatus.DELIVERED);
+    expect(result[0].checkpointHistory).toHaveLength(2);
     expect(result[1].id).toBe('UNIT002');
+    expect(result[1].currentStatus).toBe(CheckpointStatus.IN_TRANSIT);
+    expect(result[1].checkpointHistory).toHaveLength(1);
     expect(mockUnitRepository.findByStatus).toHaveBeenCalledWith(
       CheckpointStatus.IN_TRANSIT,
     );

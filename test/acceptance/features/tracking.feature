@@ -22,6 +22,7 @@ Feature: Tracking Checkpoint Management
     And it should include the current unit status
 
   Scenario: List units by status
-    Given there are multiple units in different states
+    Given there are multiple units with different checkpoint histories
     When I query units with status "IN_TRANSIT"
-    Then I should receive only units in "IN_TRANSIT" status
+    Then I should receive all units that are or have been in "IN_TRANSIT" status
+    And each unit should include its complete checkpoint history

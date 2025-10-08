@@ -1,5 +1,6 @@
 import { Unit } from '@tracking/domain/entities/Unit';
 import { CheckpointStatus } from '@tracking/domain/entities/CheckpointStatus';
+import { Checkpoint } from '@tracking/domain/entities/Checkpoint';
 
 describe('Unit', () => {
   const mockDate = new Date('2025-09-30T12:00:00Z');
@@ -25,6 +26,7 @@ describe('Unit', () => {
     expect(unit.currentStatus).toBe(CheckpointStatus.CREATED);
     expect(unit.createdAt).toEqual(mockDate);
     expect(unit.lastUpdated).toEqual(mockDate);
+    expect(unit.checkpointHistory).toEqual([]);
   });
 
   it('should create a unit with custom dates', () => {
@@ -43,7 +45,7 @@ describe('Unit', () => {
     expect(unit.lastUpdated).toEqual(customLastUpdated);
   });
 
-  it('should update status and lastUpdated date', () => {
+  it('should update status, lastUpdated date and add checkpoint to history', () => {
     const unit = new Unit({
       id: 'UNIT001',
       trackingId: 'TRK001',
@@ -53,9 +55,19 @@ describe('Unit', () => {
     const newDate = new Date('2025-09-30T13:00:00Z');
     jest.setSystemTime(newDate);
 
-    unit.updateStatus(CheckpointStatus.IN_TRANSIT);
+    const checkpoint = new Checkpoint({
+      id: 'CP001',
+      unitId: 'UNIT001',
+      trackingId: 'TRK001',
+      status: CheckpointStatus.IN_TRANSIT,
+      timestamp: newDate,
+    });
+
+    unit.updateStatus(CheckpointStatus.IN_TRANSIT, checkpoint);
 
     expect(unit.currentStatus).toBe(CheckpointStatus.IN_TRANSIT);
     expect(unit.lastUpdated).toEqual(newDate);
+    expect(unit.checkpointHistory).toHaveLength(1);
+    expect(unit.checkpointHistory[0]).toBe(checkpoint);
   });
 });

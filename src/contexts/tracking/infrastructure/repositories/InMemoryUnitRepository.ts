@@ -10,12 +10,27 @@ export class InMemoryUnitRepository implements IUnitRepository {
 
   private seedData(): void {
     const testUnits = [
-      new Unit({ id: 'UNIT001', trackingId: 'TRK001', currentStatus: CheckpointStatus.CREATED }),
-      new Unit({ id: 'UNIT002', trackingId: 'TRK002', currentStatus: CheckpointStatus.IN_TRANSIT }),
-      new Unit({ id: 'UNIT003', trackingId: 'TRK003', currentStatus: CheckpointStatus.DELIVERED })
+      new Unit({
+        id: 'UNIT001',
+        trackingId: 'TRK001',
+        currentStatus: CheckpointStatus.CREATED,
+        checkpointHistory: [],
+      }),
+      new Unit({
+        id: 'UNIT002',
+        trackingId: 'TRK002',
+        currentStatus: CheckpointStatus.IN_TRANSIT,
+        checkpointHistory: [],
+      }),
+      new Unit({
+        id: 'UNIT003',
+        trackingId: 'TRK003',
+        currentStatus: CheckpointStatus.DELIVERED,
+        checkpointHistory: [],
+      }),
     ];
-    
-    testUnits.forEach(unit => this.units.set(unit.id, unit));
+
+    testUnits.forEach((unit) => this.units.set(unit.id, unit));
   }
 
   async findById(id: string): Promise<Unit | null> {
@@ -23,13 +38,25 @@ export class InMemoryUnitRepository implements IUnitRepository {
   }
 
   async findByTrackingId(trackingId: string): Promise<Unit | null> {
-    return Array.from(this.units.values())
-      .find(unit => unit.trackingId === trackingId) || null;
+    return (
+      Array.from(this.units.values()).find(
+        (unit) => unit.trackingId === trackingId,
+      ) || null
+    );
   }
 
   async findByStatus(status: CheckpointStatus): Promise<Unit[]> {
-    return Array.from(this.units.values())
-      .filter(unit => unit.currentStatus === status);
+    const units = Array.from(this.units.values());
+    if (!status) return units;
+    return units.filter((unit) => {
+      return (
+        unit.currentStatus === status ||
+        (Array.isArray(unit.checkpointHistory) &&
+          unit.checkpointHistory.some(
+            (checkpoint) => checkpoint.status === status,
+          ))
+      );
+    });
   }
 
   async update(unit: Unit): Promise<Unit> {

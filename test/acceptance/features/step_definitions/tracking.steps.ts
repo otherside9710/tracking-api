@@ -28,6 +28,13 @@ interface UnitResponse {
   id: string;
   trackingId: string;
   currentStatus: string;
+  checkpointHistory: Array<{
+    id: string;
+    status: string;
+    timestamp: string;
+    location?: string;
+    description?: string;
+  }>;
 }
 
 let app: FastifyInstance;
@@ -122,67 +129,91 @@ Then('it should include the current unit status', function () {
   expect(result.currentStatus).to.be.a('string');
 });
 
-Given('there are multiple units in different states', async function () {
-  // Primero, creamos un checkpoint para una nueva unidad
-  const createCheckpointResponse = await app.inject({
-    method: 'POST',
-    url: '/api/v1/checkpoints',
-    headers: {
-      authorization: `Bearer ${token}`,
-    },
-    payload: {
-      unitId: 'UNIT002',
-      trackingId: 'TRK002',
-      status: 'CREATED',
-      location: 'Test Location',
-      description: 'Initial checkpoint',
-    },
-  });
+Given(
+  'there are multiple units with different checkpoint histories',
+  async function () {
+    // Creamos un checkpoint inicial para la primera unidad
+    const createFirstCheckpointResponse = await app.inject({
+      method: 'POST',
+      url: '/api/v1/checkpoints',
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
+      payload: {
+        unitId: 'UNIT002',
+        trackingId: 'TRK002',
+        status: 'CREATED',
+        location: 'Test Location',
+        description: 'Initial checkpoint',
+      },
+    });
 
-  expect(createCheckpointResponse.statusCode).to.be.oneOf(
-    [201, 409],
-    'Should create checkpoint or already exist',
-  );
+    expect(createFirstCheckpointResponse.statusCode).to.be.oneOf(
+      [201, 409],
+      'Should create first checkpoint or already exist',
+    );
 
-  // Creamos otro checkpoint para tener múltiples estados
-  const secondCheckpointResponse = await app.inject({
-    method: 'POST',
-    url: '/api/v1/checkpoints',
-    headers: {
-      authorization: `Bearer ${token}`,
-    },
-    payload: {
-      unitId: 'UNIT001',
-      trackingId: 'TRK001',
-      status: 'IN_TRANSIT',
-      location: 'Another Location',
-      description: 'Transit checkpoint',
-    },
-  });
+    // Creamos un segundo checkpoint para la misma unidad con un estado diferente
+    const updateFirstUnitResponse = await app.inject({
+      method: 'POST',
+      url: '/api/v1/checkpoints',
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
+      payload: {
+        unitId: 'UNIT002',
+        trackingId: 'TRK002',
+        status: 'IN_TRANSIT',
+        location: 'Moving Location',
+        description: 'Unit is moving',
+      },
+    });
 
-  expect(secondCheckpointResponse.statusCode).to.be.oneOf(
-    [201, 409],
-    'Should create second checkpoint or already exist',
-  );
+    expect(updateFirstUnitResponse.statusCode).to.be.oneOf(
+      [201, 409],
+      'Should create update checkpoint or already exist',
+    );
 
-  // Luego verificamos que podemos obtener las unidades
-  const response = await app.inject({
-    method: 'GET',
-    url: '/api/v1/shipments',
-    headers: {
-      authorization: `Bearer ${token}`,
-    },
-  });
+    // Creamos un checkpoint para una segunda unidad
+    const createSecondUnitResponse = await app.inject({
+      method: 'POST',
+      url: '/api/v1/checkpoints',
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
+      payload: {
+        unitId: 'UNIT001',
+        trackingId: 'TRK001',
+        status: 'IN_TRANSIT',
+        location: 'Another Location',
+        description: 'Transit checkpoint',
+      },
+    });
 
-  expect(response.statusCode).to.equal(200);
-  const units = JSON.parse(response.payload);
-  expect(units).to.be.an('array');
-  expect(units.length).to.be.at.least(1, 'Should have at least one unit');
+    expect(createSecondUnitResponse.statusCode).to.be.oneOf(
+      [201, 409],
+      'Should create second unit checkpoint or already exist',
+    );
 
-  // Verificar que hay al menos una unidad con estado
-  const states = new Set(units.map((unit) => unit.currentStatus));
-  expect(states.size).to.be.at.least(1, 'Should have at least one status');
-});
+    // Luego verificamos que podemos obtener las unidades
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/v1/shipments',
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
+    });
+
+    expect(response.statusCode).to.equal(200);
+    const units = JSON.parse(response.payload);
+    expect(units).to.be.an('array');
+    expect(units.length).to.be.at.least(1, 'Should have at least one unit');
+
+    // Verificar que hay al menos una unidad con estado
+    const states = new Set(units.map((unit) => unit.currentStatus));
+    expect(states.size).to.be.at.least(1, 'Should have at least one status');
+  },
+);
 
 When('I query units with status {string}', async function (status: string) {
   response = await app.inject({
@@ -195,15 +226,43 @@ When('I query units with status {string}', async function (status: string) {
 });
 
 Then(
-  'I should receive only units in {string} status',
+  'I should receive all units that are or have been in {string} status',
   function (status: string) {
     expect(response.statusCode).to.equal(200);
     const units = JSON.parse(response.payload);
     expect(units).to.be.an('array');
-    // Verificar que todas las unidades tienen el estado correcto
-    expect(units.every((unit) => unit.currentStatus === status)).to.be.true;
+    expect(units.length).to.be.greaterThan(0, 'Should have at least one unit');
+
+    // Verificar que cada unidad o tiene el estado actual o tiene un checkpoint con ese estado
+    units.forEach((unit) => {
+      const hasStatus =
+        unit.currentStatus === status ||
+        (unit.checkpointHistory &&
+          unit.checkpointHistory.some(
+            (checkpoint) => checkpoint.status === status,
+          ));
+      expect(
+        hasStatus,
+        `Unit ${unit.id} should have status ${status} in current status or history`,
+      ).to.be.true;
+    });
   },
 );
+
+Then('each unit should include its complete checkpoint history', function () {
+  const units = JSON.parse(response.payload);
+  expect(units).to.be.an('array');
+  units.forEach((unit) => {
+    expect(unit).to.have.property('checkpointHistory');
+    expect(unit.checkpointHistory).to.be.an('array');
+    if (unit.checkpointHistory.length > 0) {
+      unit.checkpointHistory.forEach((checkpoint) => {
+        expect(checkpoint).to.have.property('status');
+        expect(checkpoint).to.have.property('timestamp');
+      });
+    }
+  });
+});
 
 When(
   'I register a new checkpoint with the following data:',
